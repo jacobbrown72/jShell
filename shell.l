@@ -22,9 +22,10 @@
 '\"'			return QUOTE;
 '\'				return WACK;
 '&'				return AMP;
+'\n'			return END;
 
 [a-zA-Z]+		{cmd = yytext; cmd_length = yyleng; return WORD;}
-[ \t\n]+		return WHITESPACE;
+[ \t\n]+			return WHITESPACE;
 
 
 %%

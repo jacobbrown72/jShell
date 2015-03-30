@@ -22,6 +22,7 @@
 %token QUOTE	// "
 %token WACK		// "\"	
 %token AMP		// &
+%token END		// \n
 
 %token WORD
 
@@ -29,19 +30,21 @@
 
 %token WHITESPACE
 
+%error-verbose
+
 %%
-cmd:		built_in
-			| other
+cmd:		built_in 
+			| other 
 
-built_in:	SETENV		{printf("setenv command received\n");}
-			| PRINTENV 	{printf("printenv command received\n");}
-			| UNSETENV	{printf("unsetenv command received\n");}
-			| CD		{printf("cd command received\n");}
-			| ALIAS 	{printf("alias command received\n");}
-			| UNALIAS	{printf("unalias command received\n");}
-			| BYE		{printf("bye command received\n");}
+built_in:	SETENV		{printf("setenv command received\n"); YYACCEPT;}
+			| PRINTENV 	{printf("printenv command received\n"); YYACCEPT;}
+			| UNSETENV	{printf("unsetenv command received\n"); YYACCEPT;}
+			| CD		{printf("cd command received\n"); YYACCEPT;}
+			| ALIAS 	{printf("alias command received\n"); YYACCEPT;}
+			| UNALIAS	{printf("unalias command received\n"); YYACCEPT;}
+			| BYE		{printf("bye command received\n"); YYACCEPT;}
 
-other:		WORD		{fprintf(stdout, "%s command received\n", cmd);}
+other:		WORD		{printf("%s command received\n", cmd); YYACCEPT;}
 
 %%
 void yyerror(char *s) {

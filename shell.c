@@ -1,6 +1,10 @@
 #include "shell.h"
+#include <stdio.h>
 
 int main(){
-	yyparse();
+	while(1){
+		printf("jShell: ");
+		yyparse();
+	}
 	return 0;
 }
