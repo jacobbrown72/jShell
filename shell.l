@@ -2,8 +2,8 @@
 	#include <stdlib.h>
 	#include "y.tab.h"
 	#include "shell.h"
-	extern char* cmd;
-	extern int cmd_length;
+	char* str;
+	int str_length;
 	void yyerror(char*);
 %}
 
@@ -22,10 +22,9 @@
 '\"'			return QUOTE;
 '\'				return WACK;
 '&'				return AMP;
-'\n'			return END;
 
-[a-zA-Z]+		{cmd = yytext; cmd_length = yyleng; return WORD;}
-[ \t\n]+			return WHITESPACE;
+[a-zA-Z]+		{str = yytext; str_length = yyleng; return WORD;}
+[ \t]+			return WHITESPACE;
 
 
 %%

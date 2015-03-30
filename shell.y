@@ -3,8 +3,8 @@
 	#include "shell.h"
 	int yylex(void);
 	void  yyerror(char*);
-	char* cmd;
-	int cmd_length;
+	char* str;
+	int str_length;
 %}
 /*token definitions for built in functions*/
 %token SETENV
@@ -22,15 +22,12 @@
 %token QUOTE	// "
 %token WACK		// "\"	
 %token AMP		// &
-%token END		// \n
 
 %token WORD
 
 %start cmd
 
 %token WHITESPACE
-
-%error-verbose
 
 %%
 cmd:		built_in 
@@ -44,7 +41,7 @@ built_in:	SETENV		{printf("setenv command received\n"); YYACCEPT;}
 			| UNALIAS	{printf("unalias command received\n"); YYACCEPT;}
 			| BYE		{printf("bye command received\n"); YYACCEPT;}
 
-other:		WORD		{printf("%s command received\n", cmd); YYACCEPT;}
+other:		WORD		{printf("%s command received\n", str); YYACCEPT;}
 
 %%
 void yyerror(char *s) {
