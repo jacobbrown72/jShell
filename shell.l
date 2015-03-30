@@ -1,7 +1,7 @@
 %{
 	#include <stdlib.h>
 	#include "y.tab.h"
-	#include "variable.h"
+	#include "shell.h"
 	extern char* cmd;
 	extern int cmd_length;
 	void yyerror(char*);

@@ -1,6 +1,6 @@
 %{
 	#include <stdio.h>
-	#include "variable.h"
+	#include "shell.h"
 	int yylex(void);
 	void  yyerror(char*);
 	char* cmd;
@@ -48,12 +48,6 @@ void yyerror(char *s) {
 	fprintf(stderr, "%s\n", s);
 }
 
-#include "variable.h"
 
-int main(){
-	//char* cmd[STR_LENGTH];
-	yyparse();
-	return 0;
-}
 
 
