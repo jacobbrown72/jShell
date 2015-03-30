@@ -834,7 +834,7 @@ return AMP;
 case 14:
 YY_RULE_SETUP
 #line 26 "shell.l"
-{cmd = yytext; cmd_length = yylength; return WORD;}
+{cmd = yytext; cmd_length = yyleng; return WORD;}
 	YY_BREAK
 case 15:
 /* rule 15 can match eol */
