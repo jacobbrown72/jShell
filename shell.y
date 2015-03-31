@@ -26,13 +26,36 @@
 
 %token WORD
 
-
-
-%start cmd
+%start line
 
 %token WHITESPACE
 
 %%
+
+line:		cmds io_red AMP
+			| cmds AMP
+			| cmds io_red
+			| cmds
+		
+cmds: 		cmd.args
+			| cmd.args VERT cmds
+		
+cmd.args:	cmd
+			| cmd args
+
+cmd:		SETENV
+			| PRINTENV
+			| UNSETENV
+			| CD
+			| ALIAS
+			| UNALIAS
+			| BYE
+			| WORD
+
+args:		WORD
+			| WORD args
+
+io_red:
 		
 
 %%
