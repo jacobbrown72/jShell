@@ -27,7 +27,7 @@
 
 %token WORD
 
-%start cmds
+%start cmd
 
 %token WHITESPACE
 
@@ -37,7 +37,7 @@ line:		cmds io_red AMP
 			| cmds AMP
 			| cmds io_red
 			| cmds
-*/
+
 		
 cmds: 		cmds VERT cmd.args
 			| cmd.args 
@@ -45,11 +45,11 @@ cmds: 		cmds VERT cmd.args
 		
 cmd.args:	cmd args
 			| cmd 
-
+*/
 
 cmd:		SETENV			{
 								Cmd new_cmd;
-								new_cmd.cmdname = "built-in";
+								new_cmd.cmdname = "setenv";
 								new_cmd.bi_type = SET;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
@@ -59,7 +59,7 @@ cmd:		SETENV			{
 							
 			| PRINTENV		{
 								Cmd new_cmd;
-								new_cmd.cmdname = "built-in";
+								new_cmd.cmdname = "printenv";
 								new_cmd.bi_type = PRINT;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
@@ -69,7 +69,7 @@ cmd:		SETENV			{
 							
 			| UNSETENV		{
 								Cmd new_cmd;
-								new_cmd.cmdname = "buildt-in";
+								new_cmd.cmdname = "unsetenv";
 								new_cmd.bi_type = UNSET;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
@@ -79,7 +79,7 @@ cmd:		SETENV			{
 							
 			| CD			{
 								Cmd new_cmd;
-								new_cmd.cmdname = "built-in";
+								new_cmd.cmdname = "cd";
 								new_cmd.bi_type = CHANGE;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
@@ -89,7 +89,7 @@ cmd:		SETENV			{
 							
 			| ALIAS			{
 								Cmd new_cmd;
-								new_cmd.cmdname = "built-in";
+								new_cmd.cmdname = "alias";
 								new_cmd.bi_type = AL;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
@@ -99,7 +99,7 @@ cmd:		SETENV			{
 							
 			| UNALIAS		{
 								Cmd new_cmd;
-								new_cmd.cmdname = "built-in";
+								new_cmd.cmdname = "unalias";
 								new_cmd.bi_type = UNAL;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
@@ -109,7 +109,7 @@ cmd:		SETENV			{
 							
 			| BYE			{
 								Cmd new_cmd;
-								new_cmd.cmdname = "build-in";
+								new_cmd.cmdname = "bye";
 								new_cmd.bi_type = BY;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
@@ -127,10 +127,10 @@ cmd:		SETENV			{
 								cmd_counter++;
 								YYACCEPT;
 							}
-
+/*
 args:		args WORD
 			| WORD 
-
+*/
 
 //io_red:
 		
