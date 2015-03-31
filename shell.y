@@ -27,7 +27,7 @@
 
 %token WORD
 
-%start cmd
+%start cmds
 
 %token WHITESPACE
 
@@ -37,14 +37,15 @@ line:		cmds io_red AMP
 			| cmds AMP
 			| cmds io_red
 			| cmds
-
+*/
 		
 cmds: 		cmds VERT cmd.args
 			| cmd.args 
+
 		
 cmd.args:	cmd args
 			| cmd 
-*/
+
 
 cmd:		SETENV			{
 								Cmd new_cmd;
@@ -126,10 +127,10 @@ cmd:		SETENV			{
 								cmd_counter++;
 								YYACCEPT;
 							}
-/*
+
 args:		args WORD
 			| WORD 
-*/
+
 
 //io_red:
 		
