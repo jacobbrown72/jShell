@@ -24,8 +24,8 @@
 '&'				return AMP;
 
 [a-zA-Z]+		{str = yytext; str_length = yyleng; return WORD;}
-[ \t]+			return WHITESPACE;
-\n				;
+[ \t]+			;
+\n				return END;
 
 
 %%

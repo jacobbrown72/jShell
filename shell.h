@@ -18,18 +18,16 @@ int str_length;
 #define MAXARGS 50
 
 char cmdname_table[MAXCMDS][20];
+char argname_table[MAXARGS][100];
 
 int arg_counter;
 int cmd_counter;
 
-typedef struct	comargs{
-	char* args[MAXARGS];
-} Argtable;
 
 typedef struct command{
-	char* cmdname;		
+	char cmdname[20];		
 	int bi_type;
-	Argtable* arguments;
+	char arguments[MAXARGS][100];
 	int num_args;
 	int infd;
 	int outfd;		

@@ -24,14 +24,15 @@
 %token QUOTE	// "
 %token WACK		// "\"	
 %token AMP		// &
-
+%token END
 %token WORD
 
-%start cmd
+%start line
 
 %token WHITESPACE
 
 %%
+line:		cmd.args END	{YYACCEPT;}
 /*
 line:		cmds io_red AMP
 			| cmds AMP
@@ -41,96 +42,100 @@ line:		cmds io_red AMP
 		
 cmds: 		cmds VERT cmd.args
 			| cmd.args 
-
-		
+*/
+	
 cmd.args:	cmd args
 			| cmd 
-*/
+
 
 cmd:		SETENV			{
 								Cmd new_cmd;
-								new_cmd.cmdname = "setenv";
+								strcpy(new_cmd.cmdname, "setenv");
 								new_cmd.bi_type = SET;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
-								YYACCEPT;
 							}
 							
 			| PRINTENV		{
 								Cmd new_cmd;
-								new_cmd.cmdname = "printenv";
+								strcpy(new_cmd.cmdname, "printenv");
 								new_cmd.bi_type = PRINT;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
-								YYACCEPT;
 							}
 							
 			| UNSETENV		{
 								Cmd new_cmd;
-								new_cmd.cmdname = "unsetenv";
+								strcpy(new_cmd.cmdname, "unsetenv");
 								new_cmd.bi_type = UNSET;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
-								YYACCEPT;
 							}
 							
 			| CD			{
 								Cmd new_cmd;
-								new_cmd.cmdname = "cd";
+								strcpy(new_cmd.cmdname, "cd");
 								new_cmd.bi_type = CHANGE;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
-								YYACCEPT;
 							}
 							
 			| ALIAS			{
 								Cmd new_cmd;
-								new_cmd.cmdname = "alias";
+								strcpy(new_cmd.cmdname, "alias");
 								new_cmd.bi_type = AL;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
-								YYACCEPT;
 							}
 							
 			| UNALIAS		{
 								Cmd new_cmd;
-								new_cmd.cmdname = "unalias";
+								strcpy(new_cmd.cmdname, "unalias");
 								new_cmd.bi_type = UNAL;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
-								YYACCEPT;
 							}
 							
 			| BYE			{
 								Cmd new_cmd;
-								new_cmd.cmdname = "bye";
+								strcpy(new_cmd.cmdname, "bye");
 								new_cmd.bi_type = BY;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
-								YYACCEPT;
 							}
 							
 			| WORD			{
 								Cmd new_cmd;
-								strcpy(cmdname_table[cmd_counter], str);
-								new_cmd.cmdname = cmdname_table[cmd_counter];
+								strcpy(new_cmd.cmdname, str);
 								new_cmd.bi_type = 0;
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
-								YYACCEPT;
+								printf("registered command\n");
 							}
-/*
-args:		args WORD
-			| WORD 
-*/
+
+args:		WORD 			{
+								arg_counter = 0;
+								Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								strcpy(my_cmd->arguments[arg_counter], str);
+								printf("arg_num: %d\narg: %s\n", arg_counter, str);
+								arg_counter++;
+							}	
+			| args WORD		{
+								Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								strcpy(my_cmd->arguments[arg_counter], str);
+								arg_counter++;
+								my_cmd->num_args = arg_counter;
+							}
+			
+
 
 //io_red:
 		
