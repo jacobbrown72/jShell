@@ -16,7 +16,6 @@ void print_commands(){
 int main(){
 	arg_counter = 0;
 	cmd_counter = 0;
-	old_cmd_counter = 0;
 	
 	while(1){
 		printf("jShell: ");

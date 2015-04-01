@@ -26,28 +26,20 @@
 %token AMP		// &
 %token END
 %token WORD
-
+%token WHITESPACE
 %start line
 
-%token WHITESPACE
-%error-verbose
+
 
 %%
-line:		cmds END		{YYACCEPT;}
-/*
-line:		cmds io_red AMP
-			| cmds AMP
-			| cmds io_red
-			| cmds
-*/
-		
-cmds: 		cmd.args
-			| VERT  
 
-	
+line:		END				{YYACCEPT;}
+			| cmds END  	{YYACCEPT;}
+			
+cmds:		cmd.args
+			| cmd.args VERT cmds
+			
 cmd.args:	cmd args
-			| cmd 
-
 
 cmd:		SETENV			{
 								arg_counter = 0;
@@ -58,7 +50,7 @@ cmd:		SETENV			{
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
 							}
-							
+
 			| PRINTENV		{
 								arg_counter = 0;
 								Cmd new_cmd;
@@ -68,7 +60,7 @@ cmd:		SETENV			{
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
 							}
-							
+			
 			| UNSETENV		{
 								arg_counter = 0;
 								Cmd new_cmd;
@@ -78,7 +70,7 @@ cmd:		SETENV			{
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
 							}
-							
+			
 			| CD			{
 								arg_counter = 0;
 								Cmd new_cmd;
@@ -88,7 +80,7 @@ cmd:		SETENV			{
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
 							}
-							
+			
 			| ALIAS			{
 								arg_counter = 0;
 								Cmd new_cmd;
@@ -98,7 +90,7 @@ cmd:		SETENV			{
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
 							}
-							
+			
 			| UNALIAS		{
 								arg_counter = 0;
 								Cmd new_cmd;
@@ -108,7 +100,7 @@ cmd:		SETENV			{
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
 							}
-							
+			
 			| BYE			{
 								arg_counter = 0;
 								Cmd new_cmd;
@@ -129,21 +121,14 @@ cmd:		SETENV			{
 								cmd_counter++;
 							}
 
-args:		WORD 			{
-								Cmd* my_cmd = &cmd_table[cmd_counter-1];
-								strcpy(my_cmd->arguments[arg_counter], str);
-								arg_counter++;
-							}	
+args:		/*no arguments*/	
 			| args WORD		{
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
 								strcpy(my_cmd->arguments[arg_counter], str);
 								arg_counter++;
 								my_cmd->num_args = arg_counter;
 							}
-			
-
-
-//io_red:
+	
 		
 
 %%

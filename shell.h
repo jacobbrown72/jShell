@@ -12,6 +12,7 @@
 
 char* str;
 int str_length;
+int funct_value;
 
 /*command variables*/
 #define MAXCMDS 50
@@ -20,7 +21,6 @@ int str_length;
 
 int arg_counter;
 int cmd_counter;
-int old_cmd_counter;
 
 
 typedef struct command{
