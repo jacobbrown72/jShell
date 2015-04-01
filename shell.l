@@ -22,10 +22,12 @@
 "\""			return QUOTE;
 "\\"			return WACK;
 "&"				return AMP;
-
-[a-zA-Z]+		{str = yytext; str_length = yyleng; return WORD;}
+"2"				return STDERR;
+"1" 			return STDOUT;
+"0"				return STDIN;
 [ \t]+			;
 \n				return END;
+[a-zA-Z0-9_]+		{str = yytext; str_length = yyleng; return WORD;}
 
 
 %%

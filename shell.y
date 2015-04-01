@@ -24,6 +24,9 @@
 %token QUOTE	// "
 %token WACK		// "\"	
 %token AMP		// &
+%token STDERR
+%token STDOUT
+%token STDIN
 %token END
 %token WORD
 %token WHITESPACE
@@ -33,8 +36,11 @@
 
 %%
 
-line:		END				{YYACCEPT;}
-			| cmds END  	{YYACCEPT;}
+line:		END					{YYACCEPT;}
+			| cmds END  		{YYACCEPT;}
+			| cmds AMP END		{YYACCEPT;}
+			| cmds redir END	{YYACCEPT;}
+			| cmds redir AMP END{YYACCEPT;}
 			
 cmds:		cmd.args
 			| cmd.args VERT cmds
@@ -128,7 +134,25 @@ args:		/*no arguments*/
 								arg_counter++;
 								my_cmd->num_args = arg_counter;
 							}
-	
+
+redir:		input_red output_red err_red
+			| input_red err_red output_red
+			| output_red input_red err_red
+			| output_red err_red input_red
+			| err_red input_red output_red
+			| err_red output_red input_red
+			
+input_red:	LT file
+
+output_red:	GT file
+			| GT GT file
+
+err_red:	STDERR GT file
+
+file:		STDIN
+			| STDOUT
+			| STDERR
+			| WORD
 		
 
 %%
