@@ -17,11 +17,10 @@ int str_length;
 #define MAXCMDS 50
 #define MAXARGS 50
 
-char cmdname_table[MAXCMDS][20];
-char argname_table[MAXARGS][100];
 
 int arg_counter;
 int cmd_counter;
+int old_cmd_counter;
 
 
 typedef struct command{
