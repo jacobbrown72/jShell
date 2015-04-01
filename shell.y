@@ -38,9 +38,9 @@
 
 line:		END					{YYACCEPT;}
 			| cmds END  		{YYACCEPT;}
-			| cmds AMP END		{YYACCEPT;}
+			| cmds AMP END		{amp = 1; YYACCEPT;}
 			| cmds redir END	{YYACCEPT;}
-			| cmds redir AMP END{YYACCEPT;}
+			| cmds redir AMP END{amp = 1; YYACCEPT;}
 			
 cmds:		cmd.args
 			| cmd.args VERT cmds
@@ -142,17 +142,34 @@ redir:		input_red output_red err_red
 			| err_red input_red output_red
 			| err_red output_red input_red
 			
-input_red:	LT file
+input_red:	LT infile		{
+								inFile_red = 1;
+							}
 
-output_red:	GT file
-			| GT GT file
+output_red:	GT outfile		{
+								outFile_red = 1;
+							}
+								
+			| GT GT outfile	{
+								outFile_red = 1;
+								append = 1;
+							}
 
-err_red:	STDERR GT file
+err_red:	STDERR GT errfile	{
+									errFile_red = 1;
+								}
 
-file:		STDIN
-			| STDOUT
-			| STDERR
-			| WORD
+infile:		WORD			{
+								strcpy(inFile, str);
+							}
+							
+outfile:	WORD			{
+								strcpy(outFile, str);
+							}
+							
+errfile:	WORD			{
+								strcpy(errFile, str);
+							}
 		
 
 %%

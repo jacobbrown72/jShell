@@ -35,5 +35,15 @@ typedef struct command{
 Cmd cmd_table[MAXCMDS];
 
 /*io variables*/
+int inFile_red;
+int outFile_red;
+int errFile_red;
+int append;
+
+char inFile[100];
+char outFile[100];
+char errFile[100];
+
+int amp;
 
 #endif
