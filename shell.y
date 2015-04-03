@@ -133,6 +133,22 @@ args:		/*no arguments*/
 								arg_counter++;
 								my_cmd->num_args = arg_counter;
 							}
+			| args quote	{
+								Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								strcpy(my_cmd->arguments[arg_counter], temp);
+								arg_counter++;
+								my_cmd->num_args = arg_counter;
+							}
+							
+quote:		QUOTE words QUOTE
+
+words:		WORD			{
+								strcat(temp, str);
+							}
+			| words WORD	{
+								strcat(temp, " ");
+								strcat(temp, str);
+							}
 
 redir:		input_red output_red err_red
 			| input_red err_red output_red

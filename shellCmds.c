@@ -4,13 +4,6 @@
 #include "shellfunctions.h"
 #include "shellCmds.h"
 
-int compare(char* str1, char* str2){
-	int i;
-	do{
-		if(str1[i] != str2[i]) return 0;
-	}while(str1[i] != 0);
-	return 1;
-}
 int setenv(Cmd* cmd){
 	int i;
 	Env* env;
@@ -43,20 +36,45 @@ int unsetenv(Cmd* cmd){
 		env = &env_table[i];
 		if(strcmp(env->variable, cmd->arguments[0]) == 0) {env->used = 0; return OK;}
 	}
-	printf("removing environment variable failed\n");
 	return SYSERR;
 }
 
 int cd(Cmd* cmd){
-
+	
 }
 
 int alias(Cmd* cmd){
-
+	int i;
+	Alias* alias;
+	if(cmd->num_args == 0){//print aliases
+		for(i = 0; i < MAXALI; i++){
+			alias = &alias_table[i];
+			if(alias->used == 1) printf("%s=%s\n", alias->name, alias->value);
+		}
+		return OK;
+	}
+	else{	//create new alias
+		for(i = 0; i < MAXALI; i++){
+			alias = &alias_table[i];
+			if(alias->used == 0){
+				strcpy(alias->name, cmd->arguments[0]);
+				strcpy(alias->value, cmd->arguments[1]);
+				alias->used = 1;
+				return OK;
+			}
+		}
+		return SYSERR;
+	}
 }
 
 int unalias(Cmd* cmd){
-
+	int i;
+	Alias* alias;
+	for(i = 0; i < MAXALI; i++){
+		alias = &alias_table[i];
+		if(strcmp(alias->name, cmd->arguments[0]) == 0){alias->used = 0; return OK;}
+	}
+	return SYSERR;
 }
 
 int bye(Cmd* cmd){

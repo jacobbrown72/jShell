@@ -21,6 +21,7 @@
 #define CMDNOTREC		6		//command not recognized
 
 char errorMsg[100];
+char temp[100];
 
 char* str;
 int str_length;
@@ -67,6 +68,16 @@ typedef struct env{
 } Env;
 
 Env env_table[MAXENV];
+
+/*alias variables*/
+#define MAXALI 100
+typedef struct alias{
+	char name[100];
+	char value[100];
+	int used;
+} Alias;
+
+Alias alias_table[MAXALI];
 
 #endif
 

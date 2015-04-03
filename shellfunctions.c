@@ -37,6 +37,8 @@ void resetShell(){
 	append = 0;
 	
 	amp = 0;
+	
+	strcpy(temp, "");
 }
 
 int checkCmd(){

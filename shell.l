@@ -15,11 +15,10 @@
 "alias"			return ALIAS;
 "unalias"		return UNALIAS;
 "bye"			return BYE;
-
+"\""			return QUOTE;
 "<"				return LT;
 ">"				return GT;
 "|"				return VERT;
-"\""			return QUOTE;
 "\\"			return WACK;
 "&"				return AMP;
 "2"				return STDERR;
