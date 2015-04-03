@@ -49,88 +49,80 @@ cmd.args:	cmd args
 
 cmd:		SETENV			{
 								arg_counter = 0;
-								Cmd new_cmd;
-								strcpy(new_cmd.cmdname, "setenv");
-								new_cmd.bi_type = SET;
-								new_cmd.num_args = 0;
-								cmd_table[cmd_counter] = new_cmd;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "setenv");
+								new_cmd->bi_type = SET;
+								new_cmd->num_args = 0;
 								cmd_counter++;
 								bi = SET;
 							}
 
 			| PRINTENV		{
 								arg_counter = 0;
-								Cmd new_cmd;
-								strcpy(new_cmd.cmdname, "printenv");
-								new_cmd.bi_type = PRINT;
-								new_cmd.num_args = 0;
-								cmd_table[cmd_counter] = new_cmd;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "printenv");
+								new_cmd->bi_type = PRINT;
+								new_cmd->num_args = 0;
 								cmd_counter++;
 								bi = PRINT;
 							}
 			
 			| UNSETENV		{
 								arg_counter = 0;
-								Cmd new_cmd;
-								strcpy(new_cmd.cmdname, "unsetenv");
-								new_cmd.bi_type = UNSET;
-								new_cmd.num_args = 0;
-								cmd_table[cmd_counter] = new_cmd;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "unsetenv");
+								new_cmd->bi_type = UNSET;
+								new_cmd->num_args = 0;
 								cmd_counter++;
 								bi = UNSET;
 							}
 			
 			| CD			{
 								arg_counter = 0;
-								Cmd new_cmd;
-								strcpy(new_cmd.cmdname, "cd");
-								new_cmd.bi_type = CHANGE;
-								new_cmd.num_args = 0;
-								cmd_table[cmd_counter] = new_cmd;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "cd");
+								new_cmd->bi_type = CHANGE;
+								new_cmd->num_args = 0;
 								cmd_counter++;
 								bi = CHANGE;
 							}
 			
 			| ALIAS			{
 								arg_counter = 0;
-								Cmd new_cmd;
-								strcpy(new_cmd.cmdname, "alias");
-								new_cmd.bi_type = AL;
-								new_cmd.num_args = 0;
-								cmd_table[cmd_counter] = new_cmd;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "alias");
+								new_cmd->bi_type = AL;
+								new_cmd->num_args = 0;
 								cmd_counter++;
 								bi = AL;
 							}
 			
 			| UNALIAS		{
 								arg_counter = 0;
-								Cmd new_cmd;
-								strcpy(new_cmd.cmdname, "unalias");
-								new_cmd.bi_type = UNAL;
-								new_cmd.num_args = 0;
-								cmd_table[cmd_counter] = new_cmd;
+								Cmd* new_cmd= &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "unalias");
+								new_cmd->bi_type = UNAL;
+								new_cmd->num_args = 0;
 								cmd_counter++;
 								bi = UNAL;
 							}
 			
 			| BYE			{
 								arg_counter = 0;
-								Cmd new_cmd;
-								strcpy(new_cmd.cmdname, "bye");
-								new_cmd.bi_type = BY;
-								new_cmd.num_args = 0;
-								cmd_table[cmd_counter] = new_cmd;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "bye");
+								new_cmd->bi_type = BY;
+								new_cmd->num_args = 0;
 								cmd_counter++;
 								bi = BY;
 							}
 							
 			| WORD			{
 								arg_counter = 0;
-								Cmd new_cmd;
-								strcpy(new_cmd.cmdname, str);
-								new_cmd.bi_type = 0;
-								new_cmd.num_args = 0;
-								cmd_table[cmd_counter] = new_cmd;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, str);
+								new_cmd->bi_type = 0;
+								new_cmd->num_args = 0;
 								cmd_counter++;
 							}
 

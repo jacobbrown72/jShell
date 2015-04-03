@@ -12,6 +12,7 @@
 #define BY		7
 
 /*shell error declerations*/
+#define SYSERR			0	
 #define OK 				1		//command is ok
 #define NUMARGSERR		2		//number of args error
 #define ILLPIPE			3		//illegal pipe error
@@ -57,4 +58,23 @@ char errFile[100];
 
 int amp;
 
+/*environment variables*/
+#define MAXENV 100
+typedef struct env{
+	char variable[100];
+	char path[100];
+	int used;
+} Env;
+
+Env env_table[MAXENV];
+
 #endif
+
+
+
+
+
+
+
+
+
