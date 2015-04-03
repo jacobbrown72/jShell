@@ -141,6 +141,7 @@ args:		/*no arguments*/
 							}
 							
 quote:		QUOTE words QUOTE
+			| QUOTE QUOTE	{strcpy(temp, "");}
 
 words:		WORD			{
 								strcat(temp, str);
