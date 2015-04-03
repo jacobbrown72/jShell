@@ -1,5 +1,6 @@
-#ifndef VARIABLE_H
-#define VARIABLE_H
+#ifndef SHELL_H
+#define SHELL_H
+
 
 /*Built in function defines*/
 #define SET		1
@@ -10,9 +11,18 @@
 #define UNAL	6
 #define BY		7
 
+/*shell error declerations*/
+#define OK 				1		//command is ok
+#define NUMARGSERR		2		//number of args error
+#define ILLPIPE			3		//illegal pipe error
+#define ILLIORED		4		//illegal I/O red error
+#define FILEDNE			5		//file does not exist
+#define CMDNOTREC		6		//command not recognized
+
+char errorMsg[100];
+
 char* str;
 int str_length;
-int funct_value;
 
 /*command variables*/
 #define MAXCMDS 50
@@ -21,6 +31,7 @@ int funct_value;
 
 int arg_counter;
 int cmd_counter;
+int bi;
 
 
 typedef struct command{

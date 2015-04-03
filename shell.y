@@ -55,6 +55,7 @@ cmd:		SETENV			{
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
+								bi = SET;
 							}
 
 			| PRINTENV		{
@@ -65,6 +66,7 @@ cmd:		SETENV			{
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
+								bi = PRINT;
 							}
 			
 			| UNSETENV		{
@@ -75,6 +77,7 @@ cmd:		SETENV			{
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
+								bi = UNSET;
 							}
 			
 			| CD			{
@@ -85,6 +88,7 @@ cmd:		SETENV			{
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
+								bi = CHANGE;
 							}
 			
 			| ALIAS			{
@@ -95,6 +99,7 @@ cmd:		SETENV			{
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
+								bi = AL;
 							}
 			
 			| UNALIAS		{
@@ -105,6 +110,7 @@ cmd:		SETENV			{
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
+								bi = UNAL;
 							}
 			
 			| BYE			{
@@ -115,6 +121,7 @@ cmd:		SETENV			{
 								new_cmd.num_args = 0;
 								cmd_table[cmd_counter] = new_cmd;
 								cmd_counter++;
+								bi = BY;
 							}
 							
 			| WORD			{
