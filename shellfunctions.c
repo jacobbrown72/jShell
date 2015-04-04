@@ -25,6 +25,53 @@ void printCommands(){
 	}
 }
 
+void initShell(){
+	int i;
+	int j;
+	Cmd* cmd;
+	Env* env;
+	Alias* alias;
+	
+	/*initialize command table*/
+	for(i = 0; i < MAXCMDS; i++){
+		cmd = &cmd_table[i];
+		strcpy(cmd->cmdname, "");
+		cmd->bi_type = -1;
+		for(j = 0; j < MAXARGS; j++){
+			strcpy(cmd->arguments[j], "");
+		}
+		cmd->num_args = 0;
+		cmd->infd = -1;
+		cmd->outfd = -1;
+	}
+	
+	/*initialize IO variables*/
+	inFile_red = 0;
+	outFile_red = 0;
+	errFile_red = 0;
+	append = 0;
+	strcpy(inFile, "");
+	strcpy(outFile, "");
+	strcpy(errFile, "");
+	amp = 0;
+	
+	/*initialize env table*/
+	for(i = 0; i < MAXENV; i++){
+		env = &env_table[i];
+		strcpy(env->variable, "");
+		strcpy(env->path, "");
+		env->used = 0;
+	}
+	
+	/*initialize alias table*/
+	for(i = 0; i < MAXALI; i++){
+		alias = &alias_table[i];
+		strcpy(alias->name, "");
+		strcpy(alias->value, "");
+		alias->used = 0;
+	}
+}
+
 void resetShell(){
 	/*reset arg and cmd counter*/
 	arg_counter = 0;
@@ -124,7 +171,31 @@ int execute(Cmd* cmd){
 			default:
 				return CMDNOTREC;
 		}
-	
+	}
+	else{
+		return 0;
 	}	
-	
 }
+
+void checkAlias(){
+	int i;
+	int j;
+	Cmd* cmd;
+	Alias* alias;
+	for(i = 0; i < cmd_counter; i++){
+		cmd = &cmd_table[i];
+		for(j = 0; j < MAXALI; j++){
+			alias = &alias_table[j];
+			if((strcmp(cmd->cmdname, alias->name) == 0) && alias->used == 1){
+				//do something to handle alias
+			}
+		}
+	}
+}
+
+
+
+
+
+
+

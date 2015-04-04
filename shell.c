@@ -5,16 +5,21 @@
 
 int main(){
 	int i;
+	initShell();
 	while(1){
 		resetShell();
 		printf("jShell: ");
 		yyparse();
+		checkAlias();
 		if(checkCmd() == OK){
-			for(i = 0; i < cmd_counter; i++) execute(&cmd_table[i]);
+			for(i = 0; i < cmd_counter; i++){
+				ret = execute(&cmd_table[i]);
+			}
 		}
 		else{
 			printf("%s\n", errorMsg);
 		}
+		if(ret == CLOSE) return 0;
 	}
 	return 0;
 }

@@ -40,7 +40,12 @@ int unsetenv(Cmd* cmd){
 }
 
 int cd(Cmd* cmd){
+	if(cmd->num_args == 0){	//return home
+		
+	}
+	else{ 					//go to new directory
 	
+	}
 }
 
 int alias(Cmd* cmd){
@@ -53,7 +58,7 @@ int alias(Cmd* cmd){
 		}
 		return OK;
 	}
-	else{	//create new alias
+	else{	//create a new alias
 		for(i = 0; i < MAXALI; i++){
 			alias = &alias_table[i];
 			if(alias->used == 0){
@@ -78,5 +83,5 @@ int unalias(Cmd* cmd){
 }
 
 int bye(Cmd* cmd){
-
+	return CLOSE;
 }

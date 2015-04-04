@@ -12,7 +12,8 @@
 #define BY		7
 
 /*shell error declerations*/
-#define SYSERR			0	
+#define CLOSE			-1		//close terminal
+#define SYSERR			0		//error occured
 #define OK 				1		//command is ok
 #define NUMARGSERR		2		//number of args error
 #define ILLPIPE			3		//illegal pipe error
@@ -46,6 +47,8 @@ typedef struct command{
 } Cmd;
 
 Cmd cmd_table[MAXCMDS];
+
+int ret;
 
 /*io variables*/
 int inFile_red;

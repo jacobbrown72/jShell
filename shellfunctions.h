@@ -4,6 +4,9 @@
 #include "shellfunctions.h"
 #include "shellCmds.h"
 
+/*initialize variables for shell*/
+void initShell();
+
 /*Print all commands that where entered*/
 void printCommands();
 
@@ -12,6 +15,9 @@ void resetShell();
 
 /*Check commands that where entered*/
 int checkCmd();
+
+/*check for and exapand aliases found in the command*/
+void checkAlias();
 
 /*execute the commands*/
 int execute();
