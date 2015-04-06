@@ -28,4 +28,7 @@ int execute();
 /*execute the external commands*/
 void executeExt();
 
+/*handel occurence of an alias*/
+void handleAlias(Cmd* cmd, Alias* alias, int position);
+
 #endif

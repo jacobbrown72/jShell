@@ -3,7 +3,6 @@
 #include "shellfunctions.h"
 #include "shellCmds.h"
 
-
 int main(){
 	int i;
 	initShell();
@@ -18,8 +17,7 @@ int main(){
 			}
 		}
 		else{
-			executeExt(&cmd_table[0]);
-			//printf("%shello\n", errorMsg);
+			printf("%s\n", errorMsg);
 		}
 		if(ret == CLOSE) return 0;
 	}

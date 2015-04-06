@@ -6,11 +6,13 @@
 #include "shellfunctions.h"
 #include "shellCmds.h"
 
+
 void printPrompt(){
 	char cwd[100];
 	getcwd(cwd, sizeof(cwd));
 	printf("jShell:%s$ ", cwd);
 }
+
 
 void printCommands(){
 	int i;
@@ -39,8 +41,9 @@ void initShell(){
 	Cmd* cmd;
 	Env* env;
 	Alias* alias;
-
+	
 	/*initialize command table*/
+	cmd_table = (Cmd*)malloc(MAXCMDS * sizeof(Cmd));
 	for(i = 0; i < MAXCMDS; i++){
 		cmd = &cmd_table[i];
 		strcpy(cmd->cmdname, "");
@@ -52,7 +55,7 @@ void initShell(){
 		cmd->infd = -1;
 		cmd->outfd = -1;
 	}
-
+	
 	/*initialize IO variables*/
 	inFile_red = 0;
 	outFile_red = 0;
@@ -62,16 +65,18 @@ void initShell(){
 	strcpy(outFile, "");
 	strcpy(errFile, "");
 	amp = 0;
-
+	
 	/*initialize env table*/
+	env_table = (Env*)malloc(MAXCMDS * sizeof(Env));
 	for(i = 0; i < MAXENV; i++){
 		env = &env_table[i];
 		strcpy(env->variable, "");
 		strcpy(env->path, "");
 		env->used = 0;
 	}
-
+	
 	/*initialize alias table*/
+	alias_table = (Alias*)malloc(MAXCMDS * sizeof(Alias));
 	for(i = 0; i < MAXALI; i++){
 		alias = &alias_table[i];
 		strcpy(alias->name, "");
@@ -85,7 +90,8 @@ void resetShell(){
 	arg_counter = 0;
 	cmd_counter = 0;
 	bi = 0;
-
+	
+	/*reset I/O variables*/
 	inFile_red = 0;
 	outFile_red = 0;
 	errFile_red = 0;
@@ -104,10 +110,10 @@ int checkCmd(){
 
 		/*Check to see if I/O redirection are being used with built in commands*/
 		if(inFile_red || outFile_red) {strcpy(errorMsg, "Illegal command, file redirection not allowed with built in functions"); return ILLIORED;}
-
+		
 		/*first command should be the built in command*/
 		Cmd cmd = cmd_table[0];
-
+		
 		/*Check built in command*/
 		if(bi == SET){
 			if(cmd.num_args != 2){strcpy(errorMsg, "Wrong number of arguments, setenv requires two arguments"); return NUMARGSERR;}
@@ -139,6 +145,7 @@ int checkCmd(){
 			return OK;
 		}
 	}
+	
 	else{ //built in command was not entered
 		return 0;
 	}
@@ -174,7 +181,7 @@ int execute(Cmd* cmd){
 			case BY:
 				bye(cmd);
 				break;
-
+				
 			default:
 				return CMDNOTREC;
 		}
@@ -184,8 +191,6 @@ int execute(Cmd* cmd){
 	}
 }
 
-
-//extern char **environ;
 
 void executeExt(Cmd* cmd){
 
@@ -232,7 +237,40 @@ void executeExt(Cmd* cmd){
 		exit(1);
 	}
 	wait();
+}
 
+void handleAlias(Cmd* cmd, Alias* alias, int position){
+	int i;
+	int old_cmd_count = cmd_counter;
+	cmd_counter = 0;
+	Cmd* cmd_table_old = cmd_table;
+	Cmd* temp;
+	cmd_table = (Cmd*)malloc(100 * sizeof(Cmd));
+
+	FILE* cmd_file = fopen("cmd_file.txt", "w");
+	fputs(alias->value, cmd_file);
+	fclose(cmd_file);
+	
+	cmd_file = fopen("cmd_file.txt", "r");
+	yyin = cmd_file;
+	yyparse();
+	fclose(cmd_file);
+	yyin = stdin;
+	
+	printCommands();
+	
+	/*
+	for(i = old_cmd_count-1; i > position; i--){
+		cmd_table_old[i+cmd_counter-1] = cmd_table_old[i];
+	}
+	for(i = 0; i < cmd_counter; i++){
+		cmd_table_old[position+i] = cmd_table[i];
+	}
+	temp = cmd_table;
+	cmd_table = cmd_table_old;
+	cmd_table_old = temp;
+	free(cmd_table_old);
+	*/
 }
 
 void checkAlias(){
@@ -245,7 +283,7 @@ void checkAlias(){
 		for(j = 0; j < MAXALI; j++){
 			alias = &alias_table[j];
 			if((strcmp(cmd->cmdname, alias->name) == 0) && alias->used == 1){
-				//do something to handle alias
+				handleAlias(cmd, alias, i);
 			}
 		}
 	}

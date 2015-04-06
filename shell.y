@@ -9,23 +9,32 @@
 	int str_length;
 %}
 
-%union {
-	int	i;
-	char *s;
-	char *w;
-}
+
 
 /*token definitions for built in functions*/
-%token <i> SETENV PRINTENV UNSETENV CD ALIAS UNALIAS BYE
+%token SETENV 
+%token PRINTENV 
+%token UNSETENV 
+%token CD 
+%token ALIAS 
+%token UNALIAS 
+%token BYE
 
 /*token definitions for metacharacters*/
-%token <i> LT GT VERT QUOTE WACK AMP STDERR	STDOUT STDIN END WHITESPACE
-
-%token <w> WORD
-%token <s> STRING
+%token LT		// <
+%token GT		// >
+%token VERT		// |
+%token QUOTE	// "
+%token WACK		// "\"	
+%token AMP		// &
+%token STDERR
+%token STDOUT
+%token STDIN
+%token END
+%token WORD
+%token WHITESPACE
 
 %start line
-
 
 %%
 
@@ -37,7 +46,7 @@ line:		END					{YYACCEPT;}
 
 cmds:		cmd.args
 			| cmd.args VERT cmds
-
+			
 cmd.args:	cmd args
 
 cmd:		SETENV			{
@@ -59,7 +68,7 @@ cmd:		SETENV			{
 								cmd_counter++;
 								bi = PRINT;
 							}
-
+			
 			| UNSETENV		{
 								arg_counter = 0;
 								Cmd* new_cmd = &cmd_table[cmd_counter];
@@ -69,7 +78,7 @@ cmd:		SETENV			{
 								cmd_counter++;
 								bi = UNSET;
 							}
-
+			
 			| CD			{
 								arg_counter = 0;
 								Cmd* new_cmd = &cmd_table[cmd_counter];
@@ -79,7 +88,7 @@ cmd:		SETENV			{
 								cmd_counter++;
 								bi = CHANGE;
 							}
-
+			
 			| ALIAS			{
 								arg_counter = 0;
 								Cmd* new_cmd = &cmd_table[cmd_counter];
@@ -89,7 +98,7 @@ cmd:		SETENV			{
 								cmd_counter++;
 								bi = AL;
 							}
-
+			
 			| UNALIAS		{
 								arg_counter = 0;
 								Cmd* new_cmd= &cmd_table[cmd_counter];
@@ -99,7 +108,7 @@ cmd:		SETENV			{
 								cmd_counter++;
 								bi = UNAL;
 							}
-
+			
 			| BYE			{
 								arg_counter = 0;
 								Cmd* new_cmd = &cmd_table[cmd_counter];
@@ -109,7 +118,7 @@ cmd:		SETENV			{
 								cmd_counter++;
 								bi = BY;
 							}
-
+							
 			| WORD			{
 								arg_counter = 0;
 								Cmd* new_cmd = &cmd_table[cmd_counter];
@@ -119,7 +128,7 @@ cmd:		SETENV			{
 								cmd_counter++;
 							}
 
-args:		/*no arguments*/
+args:		/*no arguments*/	
 			| args WORD		{
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
 								strcpy(my_cmd->arguments[arg_counter], str);
@@ -132,10 +141,10 @@ args:		/*no arguments*/
 								arg_counter++;
 								my_cmd->num_args = arg_counter;
 							}
-
+							
 quote:		QUOTE words QUOTE
 			| QUOTE QUOTE	{strcpy(temp, "");}
-
+			
 words:		WORD			{
 								strcat(temp, str);
 							}
@@ -144,13 +153,15 @@ words:		WORD			{
 								strcat(temp, str);
 							}
 
+
+
 redir:		input_red output_red err_red
 			| input_red err_red output_red
 			| output_red input_red err_red
 			| output_red err_red input_red
 			| err_red input_red output_red
 			| err_red output_red input_red
-
+			
 input_red:	LT infile		{
 								inFile_red = 1;
 							}
@@ -158,7 +169,7 @@ input_red:	LT infile		{
 output_red:	GT outfile		{
 								outFile_red = 1;
 							}
-
+								
 			| GT GT outfile	{
 								outFile_red = 1;
 								append = 1;
@@ -171,15 +182,14 @@ err_red:	STDERR GT errfile	{
 infile:		WORD			{
 								strcpy(inFile, str);
 							}
-
+							
 outfile:	WORD			{
 								strcpy(outFile, str);
 							}
-
+							
 errfile:	WORD			{
 								strcpy(errFile, str);
 							}
-
 
 %%
 void yyerror(char *s) {

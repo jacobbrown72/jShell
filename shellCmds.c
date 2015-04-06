@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "shell.h"
-//#include "shellfunctions.h"
+#include "shellfunctions.h"
 #include "shellCmds.h"
 
 int set_env(Cmd* cmd){
@@ -40,7 +40,7 @@ int unset_env(Cmd* cmd){
 }
 
 int cd(Cmd* cmd){
-	if(cmd->num_args == 0){	//return home
+	if(cmd->num_args == 0){	
 		chdir(getenv("HOME"));
 	}
 	else{
@@ -68,6 +68,7 @@ int alias(Cmd* cmd){
 			if(alias->used == 0){
 				strcpy(alias->name, cmd->arguments[0]);
 				strcpy(alias->value, cmd->arguments[1]);
+				strcat(alias->value, "\n");
 				alias->used = 1;
 				return OK;
 			}
