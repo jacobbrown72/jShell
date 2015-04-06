@@ -1,53 +1,187 @@
 %{
 	#include <stdio.h>
+	#include <stdlib.h>
+	#include <string.h>
 	#include "shell.h"
 	int yylex(void);
 	void  yyerror(char*);
 	char* str;
 	int str_length;
 %}
+
+%union {
+	int	i;
+	char *s;
+	char *w;
+}
+
 /*token definitions for built in functions*/
-%token SETENV
-%token PRINTENV
-%token UNSETENV
-%token CD
-%token ALIAS
-%token UNALIAS
-%token BYE
+%token <i> SETENV PRINTENV UNSETENV CD ALIAS UNALIAS BYE
 
 /*token definitions for metacharacters*/
-%token LT		// <
-%token GT		// >
-%token VERT		// |
-%token QUOTE	// "
-%token WACK		// "\"	
-%token AMP		// &
+%token <i> LT GT VERT QUOTE WACK AMP STDERR	STDOUT STDIN END WHITESPACE
 
-%token WORD
+%token <w> WORD
+%token <s> STRING
 
-%start cmd
+%start line
 
-%token WHITESPACE
 
 %%
-cmd:		built_in 
-			| other 
 
-built_in:	SETENV		{printf("setenv command received\n"); YYACCEPT;}
-			| PRINTENV 	{printf("printenv command received\n"); YYACCEPT;}
-			| UNSETENV	{printf("unsetenv command received\n"); YYACCEPT;}
-			| CD		{printf("cd command received\n"); YYACCEPT;}
-			| ALIAS 	{printf("alias command received\n"); YYACCEPT;}
-			| UNALIAS	{printf("unalias command received\n"); YYACCEPT;}
-			| BYE		{printf("bye command received\n"); YYACCEPT;}
+line:		END					{YYACCEPT;}
+			| cmds END  		{YYACCEPT;}
+			| cmds AMP END		{amp = 1; YYACCEPT;}
+			| cmds redir END	{YYACCEPT;}
+			| cmds redir AMP END{amp = 1; YYACCEPT;}
 
-other:		WORD		{printf("%s command received\n", str); YYACCEPT;}
+cmds:		cmd.args
+			| cmd.args VERT cmds
+
+cmd.args:	cmd args
+
+cmd:		SETENV			{
+								arg_counter = 0;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "setenv");
+								new_cmd->bi_type = SET;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+								bi = SET;
+							}
+
+			| PRINTENV		{
+								arg_counter = 0;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "printenv");
+								new_cmd->bi_type = PRINT;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+								bi = PRINT;
+							}
+
+			| UNSETENV		{
+								arg_counter = 0;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "unsetenv");
+								new_cmd->bi_type = UNSET;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+								bi = UNSET;
+							}
+
+			| CD			{
+								arg_counter = 0;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "cd");
+								new_cmd->bi_type = CHANGE;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+								bi = CHANGE;
+							}
+
+			| ALIAS			{
+								arg_counter = 0;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "alias");
+								new_cmd->bi_type = AL;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+								bi = AL;
+							}
+
+			| UNALIAS		{
+								arg_counter = 0;
+								Cmd* new_cmd= &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "unalias");
+								new_cmd->bi_type = UNAL;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+								bi = UNAL;
+							}
+
+			| BYE			{
+								arg_counter = 0;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "bye");
+								new_cmd->bi_type = BY;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+								bi = BY;
+							}
+
+			| WORD			{
+								arg_counter = 0;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, str);
+								new_cmd->bi_type = 0;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+							}
+
+args:		/*no arguments*/
+			| args WORD		{
+								Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								strcpy(my_cmd->arguments[arg_counter], str);
+								arg_counter++;
+								my_cmd->num_args = arg_counter;
+							}
+			| args quote	{
+								Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								strcpy(my_cmd->arguments[arg_counter], temp);
+								arg_counter++;
+								my_cmd->num_args = arg_counter;
+							}
+
+quote:		QUOTE words QUOTE
+			| QUOTE QUOTE	{strcpy(temp, "");}
+
+words:		WORD			{
+								strcat(temp, str);
+							}
+			| words WORD	{
+								strcat(temp, " ");
+								strcat(temp, str);
+							}
+
+redir:		input_red output_red err_red
+			| input_red err_red output_red
+			| output_red input_red err_red
+			| output_red err_red input_red
+			| err_red input_red output_red
+			| err_red output_red input_red
+
+input_red:	LT infile		{
+								inFile_red = 1;
+							}
+
+output_red:	GT outfile		{
+								outFile_red = 1;
+							}
+
+			| GT GT outfile	{
+								outFile_red = 1;
+								append = 1;
+							}
+
+err_red:	STDERR GT errfile	{
+									errFile_red = 1;
+								}
+
+infile:		WORD			{
+								strcpy(inFile, str);
+							}
+
+outfile:	WORD			{
+								strcpy(outFile, str);
+							}
+
+errfile:	WORD			{
+								strcpy(errFile, str);
+							}
+
 
 %%
 void yyerror(char *s) {
 	fprintf(stderr, "%s\n", s);
 }
-
-
-
-

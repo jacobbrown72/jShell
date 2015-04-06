@@ -1,5 +1,8 @@
 all:
-	bison -dy shell.y
+	bison -d -y shell.y
 	flex shell.l
 
-	gcc shell.h y.tab.h y.tab.c lex.yy.c shell.c -o jshell
+	gcc y.tab.c lex.yy.c shell.c shellfunctions.c shellCmds.c -o jshell
+
+clean:
+	rm y.tab.c lex.yy.c y.tab.h jshell
