@@ -13,7 +13,6 @@ void printPrompt(){
 	printf("jShell:%s$ ", cwd);
 }
 
-
 void printCommands(){
 	int i;
 	int j;
@@ -83,6 +82,8 @@ void initShell(){
 		strcpy(alias->value, "");
 		alias->used = 0;
 	}
+	
+	chdir(getenv("HOME"));
 }
 
 void resetShell(){
@@ -98,6 +99,8 @@ void resetShell(){
 	append = 0;
 
 	amp = 0;
+	
+	old_alias = NULL;
 
 	strcpy(temp, "");
 }
@@ -147,39 +150,39 @@ int checkCmd(){
 	}
 	
 	else{ //built in command was not entered
-		return 0;
+		return OK;
 	}
 }
 
-int execute(Cmd* cmd){
+int execute(){
 	if(bi > 0){	//built int function
 		switch(bi){
 			case SET:
-				set_env(cmd);
+				set_env(&cmd_table[0]);
 				break;
 
 			case PRINT:
-				print_env(cmd);
+				print_env(&cmd_table[0]);
 				break;
 
 			case UNSET:
-				unset_env(cmd);
+				unset_env(&cmd_table[0]);
 				break;
 
 			case CHANGE:
-				cd(cmd);
+				cd(&cmd_table[0]);
 				break;
 
 			case AL:
-				alias(cmd);
+				alias(&cmd_table[0]);
 				break;
 
 			case UNAL:
-				unalias(cmd);
+				unalias(&cmd_table[0]);
 				break;
 
 			case BY:
-				bye(cmd);
+				bye(&cmd_table[0]);
 				break;
 				
 			default:
@@ -187,6 +190,8 @@ int execute(Cmd* cmd){
 		}
 	}
 	else{
+		//call executeExt() here
+		printCommands();
 		return 0;
 	}
 }
@@ -239,7 +244,8 @@ void executeExt(Cmd* cmd){
 	wait();
 }
 
-void handleAlias(Cmd* cmd, Alias* alias, int position){
+int handleAlias(Cmd* cmd, Alias* alias, int position){
+
 	int i;
 	int old_cmd_count = cmd_counter;
 	cmd_counter = 0;
@@ -267,13 +273,17 @@ void handleAlias(Cmd* cmd, Alias* alias, int position){
 	temp = cmd_table;
 	cmd_table = cmd_table_old;
 	cmd_table_old = temp;
-	free(cmd_table_old);
-	cmd_counter = old_cmd_count;
+	//free(cmd_table_old);		//this might cause memory issues, if sample imputs are small it shouldn't be a big deal
+	cmd_counter = old_cmd_count + cmd_counter - 1;
 	
-	printCommands();
+	old_alias = alias;
+		
+	checkAlias();
+	
+	return OK;
 }
 
-void checkAlias(){
+int checkAlias(){
 	int i;
 	int j;
 	Cmd* cmd;
@@ -283,7 +293,7 @@ void checkAlias(){
 		for(j = 0; j < MAXALI; j++){
 			alias = &alias_table[j];
 			if((strcmp(cmd->cmdname, alias->name) == 0) && alias->used == 1){
-				handleAlias(cmd, alias, i);
+				return handleAlias(cmd, alias, i);
 			}
 		}
 	}

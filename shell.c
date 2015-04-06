@@ -12,9 +12,7 @@ int main(){
 		yyparse();
 		checkAlias();
 		if(checkCmd() == OK){
-			for(i = 0; i < cmd_counter; i++){
-				ret = execute(&cmd_table[i]);
-			}
+			ret = execute();
 		}
 		else{
 			printf("%s\n", errorMsg);

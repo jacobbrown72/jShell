@@ -20,7 +20,7 @@ void resetShell();
 int checkCmd();
 
 /*check for and exapand aliases found in the command*/
-void checkAlias();
+int checkAlias();
 
 /*execute the builtin commands*/
 int execute();
@@ -29,6 +29,6 @@ int execute();
 void executeExt();
 
 /*handel occurence of an alias*/
-void handleAlias(Cmd* cmd, Alias* alias, int position);
+int handleAlias(Cmd* cmd, Alias* alias, int position);
 
 #endif

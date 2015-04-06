@@ -152,8 +152,11 @@ words:		WORD			{
 								strcat(temp, " ");
 								strcat(temp, str);
 							}
-
-
+							
+			| words VERT WORD 	{
+									strcat(temp, " | ");
+									strcat(temp, str);
+								}
 
 redir:		input_red output_red err_red
 			| input_red err_red output_red
@@ -161,6 +164,19 @@ redir:		input_red output_red err_red
 			| output_red err_red input_red
 			| err_red input_red output_red
 			| err_red output_red input_red
+			
+			| input_red output_red
+			| output_red input_red
+			
+			| input_red err_red 
+			| err_red input_red
+			
+			| output_red err_red
+			| err_red output_red
+			
+			| input_red
+			| output_red
+			| err_red
 			
 input_red:	LT infile		{
 								inFile_red = 1;
