@@ -55,14 +55,14 @@ int cd(Cmd* cmd){
 int alias(Cmd* cmd){
 	int i;
 	Alias* alias;
-	if(cmd->num_args == 0){//print aliases
+	if(cmd->num_args == 0){
 		for(i = 0; i < MAXALI; i++){
 			alias = &alias_table[i];
 			if(alias->used == 1) printf("%s=%s\n", alias->name, alias->value);
 		}
 		return OK;
 	}
-	else{	//create a new alias
+	else{
 		for(i = 0; i < MAXALI; i++){
 			alias = &alias_table[i];
 			if(alias->used == 0){

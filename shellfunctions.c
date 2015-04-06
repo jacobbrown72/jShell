@@ -257,20 +257,20 @@ void handleAlias(Cmd* cmd, Alias* alias, int position){
 	fclose(cmd_file);
 	yyin = stdin;
 	
-	printCommands();
-	
-	/*
 	for(i = old_cmd_count-1; i > position; i--){
 		cmd_table_old[i+cmd_counter-1] = cmd_table_old[i];
 	}
 	for(i = 0; i < cmd_counter; i++){
 		cmd_table_old[position+i] = cmd_table[i];
 	}
+	
 	temp = cmd_table;
 	cmd_table = cmd_table_old;
 	cmd_table_old = temp;
 	free(cmd_table_old);
-	*/
+	cmd_counter = old_cmd_count;
+	
+	printCommands();
 }
 
 void checkAlias(){
