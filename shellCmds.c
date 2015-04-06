@@ -4,7 +4,7 @@
 #include "shellfunctions.h"
 #include "shellCmds.h"
 
-int setenv(Cmd* cmd){
+int _setenv(Cmd* cmd){
 	int i;
 	Env* env;
 	for(i = 0; i < MAXENV; i++){
@@ -29,7 +29,7 @@ int printenv(Cmd* cmd){
 	return OK;
 }
 
-int unsetenv(Cmd* cmd){
+int _unsetenv(Cmd* cmd){
 	int i;
 	Env* env;
 	for(i = 0; i < MAXENV; i++){
@@ -64,6 +64,7 @@ int alias(Cmd* cmd){
 			if(alias->used == 0){
 				strcpy(alias->name, cmd->arguments[0]);
 				strcpy(alias->value, cmd->arguments[1]);
+				strcat(alias->value, "\n");
 				alias->used = 1;
 				return OK;
 			}

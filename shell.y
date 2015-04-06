@@ -142,7 +142,7 @@ args:		/*no arguments*/
 							
 quote:		QUOTE words QUOTE
 			| QUOTE QUOTE	{strcpy(temp, "");}
-
+			
 words:		WORD			{
 								strcat(temp, str);
 							}
@@ -150,6 +150,8 @@ words:		WORD			{
 								strcat(temp, " ");
 								strcat(temp, str);
 							}
+
+
 
 redir:		input_red output_red err_red
 			| input_red err_red output_red

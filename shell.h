@@ -1,5 +1,6 @@
 #ifndef SHELL_H
 #define SHELL_H
+#include <stdio.h>
 
 
 /*Built in function defines*/
@@ -20,6 +21,8 @@
 #define ILLIORED		4		//illegal I/O red error
 #define FILEDNE			5		//file does not exist
 #define CMDNOTREC		6		//command not recognized
+	
+extern FILE* yyin;
 
 char errorMsg[100];
 char temp[100];
@@ -46,7 +49,7 @@ typedef struct command{
 	int outfd;		
 } Cmd;
 
-Cmd cmd_table[MAXCMDS];
+Cmd* cmd_table;
 
 int ret;
 
@@ -70,7 +73,7 @@ typedef struct env{
 	int used;
 } Env;
 
-Env env_table[MAXENV];
+Env* env_table;
 
 /*alias variables*/
 #define MAXALI 100
@@ -80,7 +83,8 @@ typedef struct alias{
 	int used;
 } Alias;
 
-Alias alias_table[MAXALI];
+Alias* alias_table;
+Alias* old_alias;
 
 #endif
 

@@ -19,6 +19,9 @@ int checkCmd();
 /*check for and exapand aliases found in the command*/
 void checkAlias();
 
+/*handel occurence of an alias*/
+void handleAlias(Cmd* cmd, Alias* alias, int position);
+
 /*execute the commands*/
 int execute();
 
