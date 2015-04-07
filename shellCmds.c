@@ -68,7 +68,7 @@ int alias(Cmd* cmd){
 			if(alias->used == 0){
 				strcpy(alias->name, cmd->arguments[0]);
 				strcpy(alias->value, cmd->arguments[1]);
-				strcat(alias->value, "\n");
+				//strcat(alias->value, "\n");
 				alias->used = 1;
 				return OK;
 			}

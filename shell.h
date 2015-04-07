@@ -84,7 +84,7 @@ typedef struct alias{
 } Alias;
 
 Alias* alias_table;
-Alias* old_alias;
+int ilist[MAXALI];
 
 #endif
 

@@ -31,4 +31,10 @@ void executeExt();
 /*handel occurence of an alias*/
 int handleAlias(Cmd* cmd, Alias* alias, int position);
 
+/*determine if there is a recursive alias*/
+int isCircular(Alias* alias, int i);
+
+/*find index of alias in alias_table*/
+int findAlias(Alias* alias);
+
 #endif
