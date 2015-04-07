@@ -22,11 +22,17 @@ int checkCmd();
 /*check for and exapand aliases found in the command*/
 void checkAlias();
 
+/*gets local evironment variable path */
+char* getLocalEnv(char* variable);
+
 /*execute the builtin commands*/
 int execute();
 
-/*execute the external commands*/
-void executeExt();
+/*check if non-builtin command is executable*/
+int executable();
+
+/*execute non-builtin commands*/
+void executeOther();
 
 /*handel occurence of an alias*/
 void handleAlias(Cmd* cmd, Alias* alias, int position);

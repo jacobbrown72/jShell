@@ -17,13 +17,15 @@
 /*shell error declerations*/
 #define CLOSE			-1		//close terminal
 #define SYSERR			0		//error occured
-#define OK 				1		//command is ok
+#define OK 				1		//builtin command is ok
 #define NUMARGSERR		2		//number of args error
 #define ILLPIPE			3		//illegal pipe error
 #define ILLIORED		4		//illegal I/O red error
 #define FILEDNE			5		//file does not exist
 #define CMDNOTREC		6		//command not recognized
-	
+#define OTHERCMD		7		//non-builtin command is ok
+
+
 extern FILE* yyin;
 
 char errorMsg[100];
@@ -36,6 +38,7 @@ int str_length;
 #define MAXCMDS 50
 #define MAXARGS 50
 
+char *other_cmd_path;
 int arg_counter;
 int cmd_counter;
 int bi;
@@ -87,12 +90,3 @@ Alias* alias_table;
 Alias* old_alias;
 
 #endif
-
-
-
-
-
-
-
-
-
