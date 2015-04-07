@@ -36,6 +36,7 @@ int str_length;
 #define MAXCMDS 50
 #define MAXARGS 50
 
+char *other_cmd_path;
 int arg_counter;
 int cmd_counter;
 int bi;
