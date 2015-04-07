@@ -255,12 +255,10 @@ int findAlias(Alias* alias){
 		aptr = &alias_table[i];
 		if((strcmp(alias->value, aptr->name) == 0) && aptr->used == 1) return i;
 	}
-	printf("alias not found\n");
 	return -1;
 }
 
 int isCircular(Alias* alias, int i){
-	printf("in iscircular function\n");
 	int c;
 	int x;
 	
