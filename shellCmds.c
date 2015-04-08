@@ -16,6 +16,7 @@ int set_env(Cmd* cmd){
 			return OK;
 		}
 	}
+	strcpy(errorMsg, "No spot found in environment table for new environment variable");
 	return SYSERR;
 }
 
@@ -36,19 +37,19 @@ int unset_env(Cmd* cmd){
 		env = &env_table[i];
 		if(strcmp(env->variable, cmd->arguments[0]) == 0) {env->used = 0; return OK;}
 	}
+	strcpy(errorMsg, "Environment variable not found, environment path not removed");
 	return SYSERR;
 }
 
 int cd(Cmd* cmd){
 	if(cmd->num_args == 0){	
-		chdir(getenv("HOME"));
+		if(chdir(getenv("HOME")) == -1) {strcpy(errorMsg, "Home path not set"); return SYSERR;}
+		return OK;
 	}
 	else{
 		char *path = cmd->arguments[0];
-
-		if(chdir(path)){
-			printf("Directory not found: %s\n", path);
-		}
+		if(chdir(path) == -1){strcpy(errorMsg, "Directory not found"); return SYSERR;}
+		return OK;
 	}
 }
 
@@ -72,6 +73,7 @@ int alias(Cmd* cmd){
 				return OK;
 			}
 		}
+		strcpy(errorMsg, "No spot found in alias table for new alias");
 		return SYSERR;
 	}
 }
@@ -83,6 +85,7 @@ int unalias(Cmd* cmd){
 		alias = &alias_table[i];
 		if(strcmp(alias->name, cmd->arguments[0]) == 0){alias->used = 0; return OK;}
 	}
+	strcpy(errorMsg, "Alias not found, not removed from alias table");
 	return SYSERR;
 }
 
