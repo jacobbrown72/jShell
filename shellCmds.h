@@ -9,5 +9,6 @@ int unset_env(Cmd* cmd);
 int cd(Cmd* cmd);
 int alias(Cmd* cmd);
 int unalias(Cmd* cmd);
+int clear(Cmd* cmd);
 int bye(Cmd* cmd);
 #endif

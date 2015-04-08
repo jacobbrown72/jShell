@@ -8,7 +8,6 @@
 
 
 void printPrompt(){
-	char cwd[100];
 	getcwd(cwd, sizeof(cwd));
 	printf("jShell:%s$ ", cwd);
 }
@@ -40,6 +39,10 @@ void initShell(){
 	Cmd* cmd;
 	Env* env;
 	Alias* alias;
+	
+	ret = -2;
+	checkalias = -2;
+	checkcommand = -2;
 	
 	/*initialize command table*/
 	cmd_table = (Cmd*)malloc(MAXCMDS * sizeof(Cmd));
@@ -84,12 +87,18 @@ void initShell(){
 		ilist[i] = -1;
 	}
 	
-	//should initialize two environment variables here
-	//	1.  "HOME"
-	//	2.  "PATH"
+	home_env = &env_table[0];
+		strcpy(home_env->variable, "HOME");
+		strcpy(home_env->path, getenv("HOME"));
+		home_env->used = 1;
+		
+	path_env = &env_table[1];
+		strcpy(path_env->variable, "PATH");
+		strcpy(path_env->path, getenv("PATH"));
+		path_env->used = 1;
 	
-	//should use home environment variable
-	chdir(getenv("HOME"));
+	chdir(getLocalEnv("HOME"));
+	clear(&cmd_table[0]);
 }
 
 void resetShell(){
@@ -103,7 +112,9 @@ void resetShell(){
 	outFile_red = 0;
 	errFile_red = 0;
 	append = 0;
-
+	strcpy(inFile, "");
+	strcpy(outFile, "");
+	strcpy(errFile, "");
 	amp = 0;
 	
 	int i;
@@ -113,6 +124,11 @@ void resetShell(){
 
 	strcpy(temp, "");
 	strcpy(errorMsg, "");
+	strcpy(warMsg, "");
+	
+	ret = -2;
+	checkalias = -2;
+	checkcommand = -2;
 }
 
 int checkCmd(){
@@ -129,32 +145,40 @@ int checkCmd(){
 		
 		/*Check built in command*/
 		if(bi == SET){
-			if(cmd.num_args != 2){strcpy(errorMsg, "Wrong number of arguments, setenv requires two arguments"); return SYSERR;}
+			if(cmd.num_args < 2){strcpy(errorMsg, "Wrong number of arguments, setenv requires two arguments"); return SYSERR;}
+			if(cmd.num_args > 2){strcpy(warMsg, "More then two arguments entered, extra arguments are ignored"); return WARNING;}
 			return OK;
 		}
 		if(bi == PRINT){
-			if(cmd.num_args > 0) strcpy(errorMsg, "Warning, arguments not required and are ignored"); 
+			if(cmd.num_args > 0) {strcpy(warMsg, "No arguments needed, extra arguments are ignored"); return WARNING;}
 			return OK;
 		}
 		if(bi == UNSET){
-			if(cmd.num_args != 1){strcpy(errorMsg, "Wrong number of arguments, unsetenv requires one argument"); return SYSERR;}
+			if(cmd.num_args < 1){strcpy(errorMsg, "Wrong number of arguments, unsetenv requires one argument"); return SYSERR;}
+			if(cmd.num_args > 1){strcpy(warMsg, "More then one argument entered, extra arguments are ignored"); return WARNING;}
 			return OK;
 		}
 		if(bi == CHANGE){
-			if(cmd.num_args > 1){strcpy(errorMsg, "Wrong number of arguments, cd requires at most one argument"); return SYSERR;}
+			if(cmd.num_args > 1){strcpy(warMsg, "More then one argument entered, extra arguments are ignored"); return WARNING;}
 			return OK;
 		}
 		if(bi == AL){
 			if(cmd.num_args == 0) return OK;
 			if(cmd.num_args == 2) return OK;
+			if(cmd.num_args > 2) {strcpy(warMsg, "More then two arguments entered, extra arguments are ignored"); return WARNING;}
 			else{strcpy(errorMsg, "Wrong number of arguments, alias requires two or no arguments"); return SYSERR;}
 		}
 		if(bi == UNAL){
-			if(cmd.num_args != 1){strcpy(errorMsg, "Wrong number of arguments, unalias requires one argument"); return SYSERR;}
+			if(cmd.num_args < 1){strcpy(errorMsg, "Wrong number of arguments, unalias requires one argument"); return SYSERR;}
+			if(cmd.num_args > 1){strcpy(warMsg, "More then one argument entered, extra arguments are ignored"); return WARNING;}
+			return OK;
+		}
+		if(bi == CLR){
+			if(cmd.num_args > 0) {strcpy(warMsg, "Warning, arguments not required and are ignored"); return WARNING;}
 			return OK;
 		}
 		if(bi == BY){
-			if(cmd.num_args > 0) strcpy(errorMsg, "Warning, arguments not required and are ignored"); 
+			if(cmd.num_args > 0) {strcpy(warMsg, "Warning, arguments not required and are ignored"); return WARNING;}
 			return OK;
 		}
 		else{
@@ -200,6 +224,10 @@ int execute(){
 			case UNAL:
 				return unalias(&cmd_table[0]);
 				break;
+				
+			case CLR:
+				return clear(&cmd_table[0]);
+				break;
 
 			case BY:
 				return bye(&cmd_table[0]);
@@ -210,7 +238,6 @@ int execute(){
 		}
 	}
 	else{
-		//printCommands();
 		executeOther();
 		return OK;
 	}

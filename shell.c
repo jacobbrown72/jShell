@@ -10,23 +10,17 @@ int main(){
 		resetShell();
 		printPrompt();
 		yyparse();
-		if(!checkAlias()) 	{printf("Error: %s\n", errorMsg); continue;}
-		if(!checkCmd()) 	{printf("Error: %s\n", errorMsg); continue;} 
+		
+		checkalias = checkAlias();
+		if(checkalias == SYSERR) 	{printf("Error: %s\n", errorMsg); continue;}
+		if(checkalias == WARNING)	{printf("Warning: %s\n", warMsg);}
+		
+		checkcommand = checkCmd();
+		if(checkcommand == SYSERR) 	{printf("Error: %s\n", errorMsg); continue;} 
+		if(checkcommand == WARNING)	{printf("Warning: %s\n", warMsg);}
+		
 		ret = execute();
 		if(ret == SYSERR)	{printf("Error: %s\n", errorMsg); continue;}
-		if(ret == CLOSE)	return 0;
+		if(ret == CLOSE)	{system("clear"); return 0;}
 	}
 }
-
-/*
-	checkAlias();
-		if(checkCmd() == OK){
-			ret = execute();
-		}
-		else{
-			printf("%s\n", errorMsg);
-		}
-		if(ret == CLOSE) return 0;
-	}
-	return 0;
-*/

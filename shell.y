@@ -19,6 +19,7 @@
 %token ALIAS 
 %token UNALIAS 
 %token BYE
+%token CLEAR
 
 /*token definitions for metacharacters*/
 %token LT		// <
@@ -107,6 +108,16 @@ cmd:		SETENV			{
 								new_cmd->num_args = 0;
 								cmd_counter++;
 								bi = UNAL;
+							}
+							
+			| CLEAR			{
+								arg_counter = 0;
+								Cmd* new_cmd = &cmd_table[cmd_counter];
+								strcpy(new_cmd->cmdname, "clear");
+								new_cmd->bi_type = CLR;
+								new_cmd->num_args = 0;
+								cmd_counter++;
+								bi = CLR;
 							}
 			
 			| BYE			{

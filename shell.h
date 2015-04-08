@@ -13,11 +13,13 @@
 #define AL		5
 #define UNAL	6
 #define BY		7
+#define CLR		8
 
 /*shell error declerations*/
 #define CLOSE			-1		//close terminal
 #define SYSERR			0		//error occured
 #define OK 				1		//command is ok
+#define WARNING			2
 //#define NUMARGSERR		2		//number of args error
 //#define ILLPIPE			3		//illegal pipe error
 //#define ILLIORED		4		//illegal I/O red error
@@ -27,10 +29,16 @@
 extern FILE* yyin;
 
 char errorMsg[100];
+char warMsg[100];
 char temp[100];
+char cwd[100];
 
 char* str;
 int str_length;
+
+int checkalias;
+int checkcommand;
+int ret;
 
 /*command variables*/
 #define MAXCMDS 50
@@ -52,8 +60,6 @@ typedef struct command{
 
 Cmd* cmd_table;
 
-int ret;
-
 /*io variables*/
 int inFile_red;
 int outFile_red;
@@ -73,6 +79,9 @@ typedef struct env{
 	char path[100];
 	int used;
 } Env;
+
+Env* home_env;
+Env* path_env;
 
 Env* env_table;
 

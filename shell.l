@@ -14,6 +14,7 @@
 "cd"			return CD;
 "alias"			return ALIAS;
 "unalias"		return UNALIAS;
+"clear"			return CLEAR;
 "bye"			return BYE;
 "\""			return QUOTE;
 "<"				return LT;

@@ -37,13 +37,13 @@ int unset_env(Cmd* cmd){
 		env = &env_table[i];
 		if(strcmp(env->variable, cmd->arguments[0]) == 0) {env->used = 0; return OK;}
 	}
-	strcpy(errorMsg, "Environment variable not found, environment path not removed");
-	return SYSERR;
+	strcpy(warMsg, "Environment variable not found, environment path not removed");
+	return WARNING;
 }
 
 int cd(Cmd* cmd){
 	if(cmd->num_args == 0){	
-		if(chdir(getenv("HOME")) == -1) {strcpy(errorMsg, "Home path not set"); return SYSERR;}
+		if(chdir(getLocalEnv("HOME")) == -1) {strcpy(errorMsg, "Home path not set"); return SYSERR;}
 		return OK;
 	}
 	else{
@@ -85,8 +85,13 @@ int unalias(Cmd* cmd){
 		alias = &alias_table[i];
 		if(strcmp(alias->name, cmd->arguments[0]) == 0){alias->used = 0; return OK;}
 	}
-	strcpy(errorMsg, "Alias not found, not removed from alias table");
-	return SYSERR;
+	strcpy(warMsg, "Alias not found, not removed from alias table");
+	return WARNING;
+}
+
+int clear(Cmd* cmd){
+	system("clear");
+	return OK;
 }
 
 int bye(Cmd* cmd){
