@@ -20,11 +20,12 @@
 #define SYSERR			0		//error occured
 #define OK 				1		//command is ok
 #define WARNING			2
-//#define NUMARGSERR		2		//number of args error
-//#define ILLPIPE			3		//illegal pipe error
-//#define ILLIORED		4		//illegal I/O red error
-//#define FILEDNE			5		//file does not exist
-//#define CMDNOTREC		6		//command not recognized
+
+/*function position*/
+#define ONLY_ONE		0
+#define FIRST			1
+#define LAST			2
+#define MIDDLE			3
 	
 extern FILE* yyin;
 
@@ -44,7 +45,6 @@ int ret;
 #define MAXCMDS 50
 #define MAXARGS 50
 
-char *other_cmd_path;
 int arg_counter;
 int cmd_counter;
 int bi;
@@ -59,12 +59,17 @@ typedef struct command{
 } Cmd;
 
 Cmd* cmd_table;
+char global_cmd_path[MAXCMDS][100];
 
 /*io variables*/
 int inFile_red;
 int outFile_red;
 int errFile_red;
 int append;
+
+int iFile;
+int oFile;
+int eFile;
 
 char inFile[100];
 char outFile[100];

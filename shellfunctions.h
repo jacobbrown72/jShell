@@ -26,7 +26,7 @@ int checkAlias();
 int execute();
 
 /*execute the external commands*/
-void executeOther();
+int executeOther();
 
 /*handel occurence of an alias*/
 int handleAlias(Cmd* cmd, Alias* alias, int position);
@@ -37,7 +37,7 @@ int isCircular(Alias* alias, int i);
 /*find index of alias in alias_table*/
 int findAlias(Alias* alias);
 
-int executable(Cmd* cmd);
+int executable(Cmd* cmd, int index);
 
 char* getLocalEnv();
 

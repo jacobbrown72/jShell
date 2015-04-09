@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include "shell.h"
 #include "shellfunctions.h"
 #include "shellCmds.h"
@@ -56,6 +57,7 @@ void initShell(){
 		cmd->num_args = 0;
 		cmd->infd = -1;
 		cmd->outfd = -1;
+		strcpy(global_cmd_path[i], "");
 	}
 	
 	/*initialize IO variables*/
@@ -66,6 +68,9 @@ void initShell(){
 	strcpy(inFile, "");
 	strcpy(outFile, "");
 	strcpy(errFile, "");
+	iFile = -1;
+	oFile = -1;
+	eFile = -1;
 	amp = 0;
 	
 	/*initialize env table*/
@@ -115,6 +120,9 @@ void resetShell(){
 	strcpy(inFile, "");
 	strcpy(outFile, "");
 	strcpy(errFile, "");
+	iFile = -1;
+	oFile = -1;
+	eFile = -1;
 	amp = 0;
 	
 	int i;
@@ -191,9 +199,26 @@ int checkCmd(){
 		/*check to make sure commands are executable*/
 		int i;
 		for(i = 0; i < cmd_counter; i++){
-			if(executable(&cmd_table[i]) == SYSERR){strcpy(errorMsg, "Command not found"); return SYSERR;}
+			if(executable(&cmd_table[i], i) == SYSERR){strcpy(errorMsg, "Command not found"); return SYSERR;}
 		}
 		/*Check file I/O*/
+		if(inFile_red){
+			iFile = open(inFile, O_RDONLY);
+			if(iFile < 0) {strcpy(errorMsg, "File not opened"); return SYSERR;}
+		}
+		if(outFile_red){
+			if(append){
+				oFile = open(outFile, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+				if(oFile < 0) {strcpy(errorMsg, "File not opened"); return SYSERR;}
+			}
+			else{
+				oFile = open(outFile, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+				if(oFile < 0) {strcpy(errorMsg, "File not opened"); return SYSERR;}
+			}
+		}
+		if(errFile_red){
+			
+		}
 		return OK;
 	}
 }
@@ -254,13 +279,13 @@ char* getLocalEnv(char * variable){
 	return ""; //not found
 }
 
-int executable(Cmd* cmd){
+int executable(Cmd* cmd, int index){
 
 	/*need to check if cmdname contains a "/"*/
 	/*if cmdname contains a "/" we search the path of the cmd name, not the PATH variable*/
 
 	char tmp[100];
-	strcpy(tmp, getenv("PATH"));
+	strcpy(tmp, getLocalEnv("PATH"));
 
 	if(strcmp(tmp, "") != 0){
 		char *paths = strtok(tmp, ":");
@@ -272,41 +297,65 @@ int executable(Cmd* cmd){
 			strcat(cmd_path, "/");
 			strcat(cmd_path, cmd->cmdname);
 			if(access(cmd_path, X_OK) == 0){
-				other_cmd_path = cmd_path;
-				return OK; //file found on path
+				strcpy(global_cmd_path[index], cmd_path);
+				return OK;
 			}
 			paths = strtok(NULL, ":");
 		}
 		strcpy(errorMsg, "Command not found");
 		return SYSERR;
 	}
+	//maybe we should include code here to check other environment paths?
+	//if we do this, simply remove the error checking after the while loop above
+	//place the error checking at the end
 }
 
-void executeOther(){
-	Cmd *cmd = &cmd_table[0];
-
-	int i, arg_num = arg_counter+2;
-
-	char * argv[arg_num];
-
-	/* create argument array */
-	for(i = 0; i < arg_num; i++){
-		if(i == 0){
-			argv[i] = other_cmd_path;
-		} else if (i == (arg_num - 1)) {
-			argv[i] = NULL;
-		}else{
-			argv[i] = cmd->arguments[i-1];
+int executeOther(){
+	Cmd* cmd;
+	int pid;
+	int arg_count;
+	int i, j;
+	int position = -1;
+	
+	for(i = 0; i < cmd_counter; i++){
+		cmd = &cmd_table[i];
+		arg_count = cmd->num_args + 2;
+		char* argv[arg_count];
+		argv[0] = global_cmd_path[i];
+		argv[arg_count-1] = NULL;
+		for(j = 1; j < arg_count - 1; j++){
+			argv[j] = cmd->arguments[j-1];
 		}
+		
+		if(cmd_counter == 1) position = ONLY_ONE;
+		else if(i == 0 && cmd_counter > 1) position = FIRST;
+		else if(i == cmd_counter-1 && cmd_counter > 1) position = LAST;
+		else position = MIDDLE;
+		
+		pid = fork();
+		
+		if(pid == 0){
+			switch(position){
+				case ONLY_ONE :
+					printf("Only command: %s\n", argv[0]);
+					break;
+				case FIRST :
+					printf("First command: %s\n", argv[0]);
+					break;
+				case MIDDLE :
+					printf("Middle command: %s\n", argv[0]);
+					break;
+				case LAST :
+					printf("Last command: %s\n", argv[0]);
+					break;
+				default :
+					printf("error occured\n"); 
+			}
+			execv(global_cmd_path[i], argv);
+			exit(1);
+		}
+		wait();
 	}
-
-	if(fork() == 0){
-		execve(other_cmd_path, argv, NULL);
-		//execl(other_cmd_path, other_cmd_path, NULL);
-		fprintf(stderr, "Command not found: %s\n", cmd->cmdname);
-		exit(1);
-	}
-	wait();
 }
 
 
@@ -395,3 +444,77 @@ int checkAlias(){
 	}
 	return OK;
 }
+
+/*
+int i;
+	int j;
+	int arg_count;
+	int position;
+	Cmd* cmd;
+	int pid;
+	
+	for(i = 0; i < cmd_counter; i++){
+		cmd = &cmd_table[i];
+		arg_count = cmd->num_args + 2;
+		char* argv[arg_count];
+		
+		/*build argv table for exec() function
+		for(j = 0; j < arg_count; j++){
+			if(j == 0) argv[j] = global_cmd_path[i];
+			else if(i == (arg_count-1)) argv[j] = NULL;
+			else argv[j] = cmd->arguments[j-1];
+		}
+		
+		/*determine position of command in command table
+		if(i == 0) position = FIRST;
+		else if(i == (cmd_counter-1)) position = LAST;
+		else if(cmd_counter == 1) position = ONLY_ONE;
+		else position = MIDDLE;
+		
+		int test = 0;
+		/*fork a new process
+		pid = fork();
+		switch(pid){
+			case 0 : 	//child process
+				printf("in child process\n");
+				//switch(position){
+					//case ONLY_ONE : 
+						
+						if(inFile_red){
+							close(0);
+							dup(iFile);
+							close(iFile);
+						}
+						if(outFile_red){
+							close(1);
+							dup(oFile);
+							close(oFile);
+						}
+						execv(global_cmd_path[i], argv);
+						printf("Only one command executed: %s\n", global_cmd_path[i]);
+						exit(1);
+						//break;
+						
+					case FIRST :
+						printf("first command executed: %s\n", global_cmd_path[i]);
+						break;	
+					
+					case LAST :
+						printf("last command executed: %s\n", global_cmd_path[i]);
+						break;
+					
+					default :
+						printf("middle command executed: %s\n", global_cmd_path[i]);
+					
+				
+			break;
+			
+			default : //parent process
+			wait();
+			printf("in parent process\n");
+		}
+	}
+	//after all process have been forked and execv'd, parent process will reach here
+	//depending on if ampersand was entered, we should either wait, or continue
+	return OK;
+*/
