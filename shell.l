@@ -3,6 +3,7 @@
 	#include "y.tab.h"
 	#include "shell.h"
 	char* str;
+	char* envstr;
 	int str_length;
 	void yyerror(char*);
 %}
@@ -27,6 +28,7 @@
 "0"				return STDIN;
 [ \t]+			;
 \n				return END;
+[a-zA-Z0-9_:./~-]*"${"[a-zA-Z0-9]+"}"[a-zA-Z0-9_:./~-]* {str = yytext; str_length = yyleng; return ENVSTR;}
 [a-zA-Z0-9_:./~-]+	{str = yytext; str_length = yyleng; return WORD;}
 
 

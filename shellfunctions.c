@@ -284,9 +284,6 @@ char* getLocalEnv(char * variable){
 
 int executable(Cmd* cmd, int index){
 
-	/*need to check if cmdname contains a "/"*/
-	/*if cmdname contains a "/" we search the path of the cmd name, not the PATH variable*/
-
 	char *cmdname = cmd->cmdname;
 
 	if(cmdname[0] == '/'){
@@ -497,4 +494,31 @@ int checkAlias(){
 		}
 	}
 	return OK;
+}
+
+
+char* insertEnvVal(char * str){
+
+	size_t end = 0, start = 0, len = strlen(str);
+	char before[50], envVar[50], after[50], *envVal;
+	char tmp [200];
+
+	end = len - strlen(strstr(str, "${"));
+	strncpy(before, str, end);
+
+	start = end + 2;
+	end = len - start - strlen(strstr(str, "}"));
+	strncpy(envVar, str + start, end);
+	envVal = getLocalEnv(envVar);
+
+	start += strlen(envVar) + 1;
+	strcpy(after, str + start);
+
+	strcpy(tmp, before);
+	strcat(tmp, envVal);
+	strcat(tmp, after);
+
+	str = tmp;
+
+	return str;
 }

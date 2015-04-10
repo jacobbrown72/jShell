@@ -3,12 +3,30 @@
 	#include <stdlib.h>
 	#include <string.h>
 	#include "shell.h"
+	#include "shellfunctions.h"
 	int yylex(void);
 	void  yyerror(char*);
 	char* str;
+	char* envstr;
 	int str_length;
-%}
 
+	/*
+				| args ENVSTR	{
+    								printf("ENVSTR: %s\t WORD: %s\n", envstr, str);
+
+    								//strncpy(temp, str+2, strlen(str)-3);
+    								//printf("The string:  %s\n", str);
+    								//printf("%s\n", temp);
+    								//printf("GetEnv: %s\n", getLocalEnv(temp));
+    								//str = getLocalEnv(temp);
+
+    								//Cmd* my_cmd = &cmd_table[cmd_counter-1];
+    								//strcpy(my_cmd->arguments[arg_counter], str);
+    								//arg_counter++;
+    								//my_cmd->num_args = arg_counter;
+    							}
+    							*/
+%}
 
 
 /*token definitions for built in functions*/
@@ -20,6 +38,7 @@
 %token UNALIAS 
 %token BYE
 %token CLEAR
+%token ENVSTR
 
 /*token definitions for metacharacters*/
 %token LT		// <
@@ -139,7 +158,19 @@ cmd:		SETENV			{
 								cmd_counter++;
 							}
 
-args:		/*no arguments*/	
+args:		/*no arguments*/
+
+			| args ENVSTR	{
+								printf("ENVSTR: %s\n", str);
+								strcpy(str, insertEnvVal(str));
+								printf("ENVSTR: %s\n", str);
+								str = getLocalEnv(temp);
+
+								Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								strcpy(my_cmd->arguments[arg_counter], str);
+								arg_counter++;
+								my_cmd->num_args = arg_counter;
+							}
 			| args WORD		{
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
 								strcpy(my_cmd->arguments[arg_counter], str);
