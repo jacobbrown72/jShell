@@ -10,9 +10,13 @@
 *.odt
 *.gch
 *~
+.*
 lex.yy.c
 y.tab.h
 y.tab.c
 shell.h.gch
 jshell
 cmd_file.txt
+
+#Used by CLion IDE
+CMakeLists.txt
