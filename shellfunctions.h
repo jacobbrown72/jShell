@@ -39,7 +39,7 @@ int findAlias(Alias* alias);
 
 int executable(Cmd* cmd, int index);
 
-char* getLocalEnv();
+char* getLocalEnv(char * variable);
 
 
 #endif

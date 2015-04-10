@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "shell.h"
 #include "shellfunctions.h"
 #include "shellCmds.h"
@@ -48,7 +49,7 @@ int cd(Cmd* cmd){
 	}
 	else{
 		char *path = cmd->arguments[0];
-		if(chdir(path) == -1){strcpy(errorMsg, "Directory not found"); return SYSERR;}
+		if(chdir(path) == -1){sprintf(errorMsg, "Directory not found: %s", path); return SYSERR;}
 		return OK;
 	}
 }

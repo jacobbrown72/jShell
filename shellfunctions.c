@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include "shell.h"
 #include "shellfunctions.h"
 #include "shellCmds.h"
@@ -199,7 +200,7 @@ int checkCmd(){
 		/*check to make sure commands are executable*/
 		int i;
 		for(i = 0; i < cmd_counter; i++){
-			if(executable(&cmd_table[i], i) == SYSERR){strcpy(errorMsg, "Command not found"); return SYSERR;}
+			if(executable(&cmd_table[i], i) == SYSERR){sprintf(errorMsg, "Command not found: %s", cmd_table[i].cmdname); return SYSERR;}
 		}
 		/*Check file I/O*/
 		if(inFile_red){
@@ -284,27 +285,38 @@ int executable(Cmd* cmd, int index){
 	/*need to check if cmdname contains a "/"*/
 	/*if cmdname contains a "/" we search the path of the cmd name, not the PATH variable*/
 
-	char tmp[100];
-	strcpy(tmp, getLocalEnv("PATH"));
+	char *cmdname = cmd->cmdname;
 
-	if(strcmp(tmp, "") != 0){
-		char *paths = strtok(tmp, ":");
-
-		char cmd_path[150];
-
-		while(paths){
-			strcpy(cmd_path, paths);
-			strcat(cmd_path, "/");
-			strcat(cmd_path, cmd->cmdname);
-			if(access(cmd_path, X_OK) == 0){
-				strcpy(global_cmd_path[index], cmd_path);
-				return OK;
-			}
-			paths = strtok(NULL, ":");
+	if(cmdname[0] == '/'){
+		cmdname++;
+		if(access(cmdname, X_OK) == 0){
+			strcpy(global_cmd_path[index], cmdname);
+			return OK;
 		}
-		strcpy(errorMsg, "Command not found");
-		return SYSERR;
 	}
+	else {
+		char tmp[100];
+		strcpy(tmp, getLocalEnv("PATH"));
+
+		if(strcmp(tmp, "") != 0){
+			char *paths = strtok(tmp, ":");
+
+			char cmd_path[150];
+
+			while(paths){
+				strcpy(cmd_path, paths);
+				strcat(cmd_path, "/");
+				strcat(cmd_path, cmdname);
+				if(access(cmd_path, X_OK) == 0){
+					strcpy(global_cmd_path[index], cmd_path);
+					return OK;
+				}
+				paths = strtok(NULL, ":");
+			}
+		}
+	}
+	return SYSERR;
+
 	//maybe we should include code here to check other environment paths?
 	//if we do this, simply remove the error checking after the while loop above
 	//place the error checking at the end
@@ -354,7 +366,7 @@ int executeOther(){
 			execv(global_cmd_path[i], argv);
 			exit(1);
 		}
-		wait();
+		wait(0);
 	}
 }
 
