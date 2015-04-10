@@ -41,7 +41,7 @@ char warMsg[100];
 char temp[100];
 char cwd[100];
 
-char* str;
+char*string;
 int str_length;
 
 int checkalias;

@@ -497,26 +497,29 @@ int checkAlias(){
 }
 
 
-char* insertEnvVal(char * str){
+char* insertEnvVal(char *str){
 
 	size_t end = 0, start = 0, len = strlen(str);
 	char before[50], envVar[50], after[50], *envVal;
-	char tmp [200];
+	char tmp [200] = {};
 
 	end = len - strlen(strstr(str, "${"));
-	strncpy(before, str, end);
+	if(end){
+		strncpy(before, str, end);
+		strcpy(tmp, before);
+	}
 
 	start = end + 2;
 	end = len - start - strlen(strstr(str, "}"));
 	strncpy(envVar, str + start, end);
 	envVal = getLocalEnv(envVar);
+	strcat(tmp, envVal);
 
 	start += strlen(envVar) + 1;
-	strcpy(after, str + start);
-
-	strcpy(tmp, before);
-	strcat(tmp, envVal);
-	strcat(tmp, after);
+	if(start){
+		strcpy(after, str + start);
+		strcat(tmp, after);
+	}
 
 	str = tmp;
 

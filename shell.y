@@ -161,10 +161,8 @@ cmd:		SETENV			{
 args:		/*no arguments*/
 
 			| args ENVSTR	{
-								printf("ENVSTR: %s\n", str);
-								strcpy(str, insertEnvVal(str));
-								printf("ENVSTR: %s\n", str);
-								str = getLocalEnv(temp);
+								strcpy(temp, insertEnvVal(str));
+								str = temp;
 
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
 								strcpy(my_cmd->arguments[arg_counter], str);

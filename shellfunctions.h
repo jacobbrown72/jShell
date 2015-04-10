@@ -43,6 +43,6 @@ int executable(Cmd* cmd, int index);
 /*get local environment variable value*/
 char* getLocalEnv(char * variable);
 
-char* insertEnvVal(char * str);
+char* insertEnvVal(char *str);
 
 #endif
