@@ -203,19 +203,21 @@ int checkCmd(){
 		}
 		/*Check file I/O*/
 		if(inFile_red){
-			iFile = open(inFile, O_RDONLY);
+			iFile = open(inFile, O_RDWR);
 			if(iFile < 0) {strcpy(errorMsg, "File not opened"); return SYSERR;}
 		}
+		
 		if(outFile_red){
 			if(append){
-				oFile = open(outFile, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+				oFile = open(outFile, O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
 				if(oFile < 0) {strcpy(errorMsg, "File not opened"); return SYSERR;}
 			}
 			else{
-				oFile = open(outFile, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+				oFile = open(outFile, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 				if(oFile < 0) {strcpy(errorMsg, "File not opened"); return SYSERR;}
 			}
 		}
+		
 		if(errFile_red){
 			
 		}
@@ -316,6 +318,7 @@ int executeOther(){
 	int arg_count;
 	int i, j;
 	int position = -1;
+	int file_descriptor[2];
 	
 	for(i = 0; i < cmd_counter; i++){
 		cmd = &cmd_table[i];
@@ -332,28 +335,67 @@ int executeOther(){
 		else if(i == cmd_counter-1 && cmd_counter > 1) position = LAST;
 		else position = MIDDLE;
 		
+		pipe(file_descriptor);
 		pid = fork();
 		
 		if(pid == 0){
 			switch(position){
 				case ONLY_ONE :
-					printf("Only command: %s\n", argv[0]);
+					if(inFile_red){
+						close(0);
+						dup(iFile);
+						close(iFile);
+					}
+					if(outFile_red){
+						close(1);
+						dup(oFile);
+						close(oFile);
+					}
 					break;
+					
 				case FIRST :
-					printf("First command: %s\n", argv[0]);
+					if(inFile_red){
+						close(0);
+						dup(iFile);
+						close(iFile);
+					}
+					close(1);
+					dup(file_descriptor[WRITE]);
+					close(file_descriptor[READ]);
+					close(file_descriptor[WRITE]);
 					break;
+					
 				case MIDDLE :
-					printf("Middle command: %s\n", argv[0]);
+					close(0);
+					dup(file_descriptor[READ]);
+					close(file_descriptor[READ]);
+					
+					close(1);
+					dup(file_descriptor[WRITE]);
+					close(file_descriptor[WRITE]);
 					break;
+					
 				case LAST :
-					printf("Last command: %s\n", argv[0]);
+					if(outFile_red){
+						close(1);
+						dup(oFile);
+						close(oFile);
+					}
+					close(0);
+					dup(file_descriptor[READ]);
+					close(file_descriptor[READ]);
+					close(file_descriptor[WRITE]);
 					break;
+					
 				default :
 					printf("error occured\n"); 
 			}
 			execv(global_cmd_path[i], argv);
 			exit(1);
 		}
+		close(file_descriptor[READ]);
+		close(file_descriptor[WRITE]);
+		wait();
 		wait();
 	}
 }
@@ -444,77 +486,3 @@ int checkAlias(){
 	}
 	return OK;
 }
-
-/*
-int i;
-	int j;
-	int arg_count;
-	int position;
-	Cmd* cmd;
-	int pid;
-	
-	for(i = 0; i < cmd_counter; i++){
-		cmd = &cmd_table[i];
-		arg_count = cmd->num_args + 2;
-		char* argv[arg_count];
-		
-		/*build argv table for exec() function
-		for(j = 0; j < arg_count; j++){
-			if(j == 0) argv[j] = global_cmd_path[i];
-			else if(i == (arg_count-1)) argv[j] = NULL;
-			else argv[j] = cmd->arguments[j-1];
-		}
-		
-		/*determine position of command in command table
-		if(i == 0) position = FIRST;
-		else if(i == (cmd_counter-1)) position = LAST;
-		else if(cmd_counter == 1) position = ONLY_ONE;
-		else position = MIDDLE;
-		
-		int test = 0;
-		/*fork a new process
-		pid = fork();
-		switch(pid){
-			case 0 : 	//child process
-				printf("in child process\n");
-				//switch(position){
-					//case ONLY_ONE : 
-						
-						if(inFile_red){
-							close(0);
-							dup(iFile);
-							close(iFile);
-						}
-						if(outFile_red){
-							close(1);
-							dup(oFile);
-							close(oFile);
-						}
-						execv(global_cmd_path[i], argv);
-						printf("Only one command executed: %s\n", global_cmd_path[i]);
-						exit(1);
-						//break;
-						
-					case FIRST :
-						printf("first command executed: %s\n", global_cmd_path[i]);
-						break;	
-					
-					case LAST :
-						printf("last command executed: %s\n", global_cmd_path[i]);
-						break;
-					
-					default :
-						printf("middle command executed: %s\n", global_cmd_path[i]);
-					
-				
-			break;
-			
-			default : //parent process
-			wait();
-			printf("in parent process\n");
-		}
-	}
-	//after all process have been forked and execv'd, parent process will reach here
-	//depending on if ampersand was entered, we should either wait, or continue
-	return OK;
-*/
