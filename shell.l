@@ -22,14 +22,10 @@
 "|"				return VERT;
 "\\"			return WACK;
 "&"				return AMP;
-"2"				return STDERR;
-"1" 			return STDOUT;
-"0"				return STDIN;
 [ \t]+			;
+"2"				return STDERR;
 \n				return END;
-[a-zA-Z0-9_:./~-]+	{str = yytext; str_length = yyleng; return WORD;}
-
-
+[a-zA-Z0-9:.\-~/]+	{str = yytext; str_length = yyleng; return WORD;}
 %%
 
 int yywrap(void) {

@@ -318,11 +318,42 @@ int executable(Cmd* cmd, int index){
 		}
 	}
 	return SYSERR;
-
-	//maybe we should include code here to check other environment paths?
-	//if we do this, simply remove the error checking after the while loop above
-	//place the error checking at the end
 }
+
+int preparePipe(){
+	if(cmd_counter == 1) return OK;
+	
+	Cmd* current_cmd;
+	Cmd* previous_cmd;
+	
+	int i;
+	for(i = 1; i < cmd_counter; i++){
+		int fileds[2];
+		pipe(fileds);
+		if(fileds[0] == -1 || fileds[1] == -1) return SYSERR;
+		
+		current_cmd = &cmd_table[i];
+		previous_cmd = &cmd_table[i-1];
+		
+		previous_cmd->outfd = fileds[1];
+		current_cmd->infd = fileds[0];
+	}
+	
+	return OK;
+}
+
+void closePipe(int index){
+	Cmd* cmd;
+	int i;
+	for(i = 0; i < cmd_counter-1; i++){
+		cmd = &cmd_table[i];
+		if(i != index){
+			close(cmd->outfd);
+			close(cmd->infd);
+		}
+	}
+}
+
 
 int executeOther(){
 	Cmd* cmd;
@@ -330,7 +361,8 @@ int executeOther(){
 	int arg_count;
 	int i, j;
 	int position = -1;
-	int file_descriptor[2];
+	
+	if(preparePipe() == SYSERR){strcpy(errorMsg, "Could not make pipes"); return SYSERR;}
 	
 	for(i = 0; i < cmd_counter; i++){
 		cmd = &cmd_table[i];
@@ -347,7 +379,6 @@ int executeOther(){
 		else if(i == cmd_counter-1 && cmd_counter > 1) position = LAST;
 		else position = MIDDLE;
 		
-		pipe(file_descriptor);
 		pid = fork();
 		
 		if(pid == 0){
@@ -371,45 +402,48 @@ int executeOther(){
 						dup(iFile);
 						close(iFile);
 					}
+					
 					close(1);
-					dup(file_descriptor[WRITE]);
-					close(file_descriptor[READ]);
-					close(file_descriptor[WRITE]);
+					dup(cmd->outfd);
+					close(cmd->outfd);
 					break;
 					
 				case MIDDLE :
 					close(0);
-					dup(file_descriptor[READ]);
-					close(file_descriptor[READ]);
+					dup(cmd->infd);
+					close(cmd->infd);
 					
 					close(1);
-					dup(file_descriptor[WRITE]);
-					close(file_descriptor[WRITE]);
+					dup(cmd->outfd);
+					close(cmd->outfd);
+					
 					break;
 					
 				case LAST :
+					close(0);
+					dup(cmd->infd);
+					close(cmd->infd);
+					
 					if(outFile_red){
 						close(1);
 						dup(oFile);
 						close(oFile);
 					}
-					close(0);
-					dup(file_descriptor[READ]);
-					close(file_descriptor[READ]);
-					close(file_descriptor[WRITE]);
 					break;
 					
 				default :
 					printf("error occured\n"); 
 			}
+			closePipe(i);
 			execv(global_cmd_path[i], argv);
 			exit(1);
 		}
-		close(file_descriptor[READ]);
-		close(file_descriptor[WRITE]);
-		wait(0);
-		wait(0);
+		else{
+			closePipe(-1);
+			wait(0);
+		}
 	}
+	//closePipe(-1);
 }
 
 

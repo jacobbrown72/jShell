@@ -29,8 +29,6 @@
 %token WACK		// "\"	
 %token AMP		// &
 %token STDERR
-%token STDOUT
-%token STDIN
 %token END
 %token WORD
 %token WHITESPACE

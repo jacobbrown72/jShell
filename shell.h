@@ -28,9 +28,6 @@
 #define MIDDLE			3
 
 /*File descriptors*/
-//#define STDIN			0
-//#define STDOUT			1
-//#define STDERR			2
 #define READ			0
 #define WRITE			1
 	
