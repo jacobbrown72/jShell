@@ -9,23 +9,6 @@
 	char* str;
 	char* envstr;
 	int str_length;
-
-	/*
-				| args ENVSTR	{
-    								printf("ENVSTR: %s\t WORD: %s\n", envstr, str);
-
-    								//strncpy(temp, str+2, strlen(str)-3);
-    								//printf("The string:  %s\n", str);
-    								//printf("%s\n", temp);
-    								//printf("GetEnv: %s\n", getLocalEnv(temp));
-    								//str = getLocalEnv(temp);
-
-    								//Cmd* my_cmd = &cmd_table[cmd_counter-1];
-    								//strcpy(my_cmd->arguments[arg_counter], str);
-    								//arg_counter++;
-    								//my_cmd->num_args = arg_counter;
-    							}
-    							*/
 %}
 
 
