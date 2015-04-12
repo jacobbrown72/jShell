@@ -3,12 +3,13 @@
 	#include <stdlib.h>
 	#include <string.h>
 	#include "shell.h"
+	#include "shellfunctions.h"
 	int yylex(void);
 	void  yyerror(char*);
 	char* str;
+	char* envstr;
 	int str_length;
 %}
-
 
 
 /*token definitions for built in functions*/
@@ -31,6 +32,7 @@
 %token STDERR
 %token END
 %token WORD
+%token ENVSTR
 %token WHITESPACE
 
 %start line
@@ -137,7 +139,14 @@ cmd:		SETENV			{
 								cmd_counter++;
 							}
 
-args:		/*no arguments*/	
+args:		/*no arguments*/
+
+			| args env.str	{
+								Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								strcpy(my_cmd->arguments[arg_counter], temp);
+								arg_counter++;
+								my_cmd->num_args = arg_counter;
+							}
 			| args WORD		{
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
 								strcpy(my_cmd->arguments[arg_counter], str);
@@ -151,9 +160,11 @@ args:		/*no arguments*/
 								my_cmd->num_args = arg_counter;
 							}
 							
-quote:		QUOTE words QUOTE
+quote:		QUOTE env.str QUOTE
+			| QUOTE words QUOTE
 			| QUOTE QUOTE	{strcpy(temp, "");}
-			
+
+
 words:		WORD			{
 								strcat(temp, str);
 							}
@@ -166,6 +177,18 @@ words:		WORD			{
 									strcat(temp, " | ");
 									strcat(temp, str);
 								}
+
+env.str:	ENVSTR			{
+								strcpy(temp, insertEnvVal(str));
+							}
+			| env.str ENVSTR	{
+								strcat(temp, insertEnvVal(str));
+							}
+
+			| env.str VERT ENVSTR 	{
+										strcat(temp, " | ");
+										strcpy(temp, insertEnvVal(str));
+									}
 
 redir:		input_red output_red err_red
 			| input_red err_red output_red

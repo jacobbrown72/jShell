@@ -284,9 +284,6 @@ char* getLocalEnv(char * variable){
 
 int executable(Cmd* cmd, int index){
 
-	/*need to check if cmdname contains a "/"*/
-	/*if cmdname contains a "/" we search the path of the cmd name, not the PATH variable*/
-
 	char *cmdname = cmd->cmdname;
 
 	if(cmdname[0] == '/'){
@@ -331,6 +328,7 @@ int preparePipe(){
 		int fileds[2];
 		pipe(fileds);
 		if(fileds[0] == -1 || fileds[1] == -1) return SYSERR;
+		//printf("reading: %d\nwriting: %d\n", fileds[0], fileds[1]);
 		
 		current_cmd = &cmd_table[i];
 		previous_cmd = &cmd_table[i-1];
@@ -361,6 +359,7 @@ int executeOther(){
 	int arg_count;
 	int i, j;
 	int position = -1;
+	char message[13];
 	
 	if(preparePipe() == SYSERR){strcpy(errorMsg, "Could not make pipes"); return SYSERR;}
 	
@@ -406,6 +405,9 @@ int executeOther(){
 					close(1);
 					dup(cmd->outfd);
 					close(cmd->outfd);
+					close(cmd->infd);
+					
+					//write(1, "Hello World\n", 13);
 					break;
 					
 				case MIDDLE :
@@ -417,18 +419,23 @@ int executeOther(){
 					dup(cmd->outfd);
 					close(cmd->outfd);
 					
+					//read(0, message, 13);
+					//write(1, message, 13);
 					break;
 					
 				case LAST :
 					close(0);
 					dup(cmd->infd);
 					close(cmd->infd);
+					close(cmd->outfd);
 					
 					if(outFile_red){
 						close(1);
 						dup(oFile);
 						close(oFile);
 					}
+					//read(0, message, 13);
+					//write(1, message, 13);
 					break;
 					
 				default :
@@ -443,7 +450,6 @@ int executeOther(){
 			wait(0);
 		}
 	}
-	//closePipe(-1);
 }
 
 
@@ -531,4 +537,34 @@ int checkAlias(){
 		}
 	}
 	return OK;
+}
+
+
+char* insertEnvVal(char *str){
+
+	size_t end = 0, start = 0, len = strlen(str);
+	char before[50], envVar[50], after[50], *envVal;
+	char tmp [200] = {};
+
+	end = len - strlen(strstr(str, "${"));
+	if(end){
+		strncpy(before, str, end);
+		strcpy(tmp, before);
+	}
+
+	start = end + 2;
+	end = len - start - strlen(strstr(str, "}"));
+	strncpy(envVar, str + start, end);
+	envVal = getLocalEnv(envVar);
+	strcat(tmp, envVal);
+
+	start += strlen(envVar) + 1;
+	if(start){
+		strcpy(after, str + start);
+		strcat(tmp, after);
+	}
+
+	str = tmp;
+
+	return str;
 }

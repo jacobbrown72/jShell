@@ -37,9 +37,12 @@ int isCircular(Alias* alias, int i);
 /*find index of alias in alias_table*/
 int findAlias(Alias* alias);
 
+/*check if non-builin command is executable*/
 int executable(Cmd* cmd, int index);
 
+/*get local environment variable value*/
 char* getLocalEnv(char * variable);
 
+char* insertEnvVal(char *str);
 
 #endif

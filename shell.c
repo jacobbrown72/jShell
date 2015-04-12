@@ -19,9 +19,9 @@ int main(){
 		if(checkcommand == SYSERR) 	{printf("Error: %s\n", errorMsg); continue;} 
 		if(checkcommand == WARNING)	{printf("Warning: %s\n", warMsg);}
 		
-		printCommands();
-		//ret = execute();
-		//if(ret == SYSERR)	{printf("Error: %s\n", errorMsg); continue;}
-		//if(ret == CLOSE)	{system("clear"); return 0;}
+		//printCommands();
+		ret = execute();
+		if(ret == SYSERR)	{printf("Error: %s\n", errorMsg); continue;}
+		if(ret == CLOSE)	{system("clear"); return 0;}
 	}
 }
