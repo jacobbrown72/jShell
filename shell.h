@@ -63,6 +63,7 @@ typedef struct command{
 	int num_args;
 	int infd;
 	int outfd;
+	int backgnd;
 } Cmd;
 
 Cmd* cmd_table;

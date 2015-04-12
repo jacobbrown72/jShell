@@ -30,8 +30,6 @@
 %token QUOTE	// "
 %token WACK		// "\"	
 %token AMP		// &
-%token STAR		// *
-%token QUEST	// ?
 %token STDERR
 %token STDOUT
 %token STDIN
@@ -40,21 +38,34 @@
 %token WHITESPACE
 
 %left ENVSTR
+%left AMP
 
 %start line
 
 %%
+													// Was using this to debug parser tree
+line:		END					{YYACCEPT;} 		// printf("(1) CMD COUNT: [%d]\n", cmd_counter);}
+			| cmds END  		{YYACCEPT;} 		// printf("(2) CMD COUNT: [%d]\n", cmd_counter);}
+			| cmds redir END	{YYACCEPT;} 		// printf("(3) CMD COUNT: [%d]\n", cmd_counter);}
+			| backgnd.cmd AMP backgnd  				//{printf("(4) CMD COUNT: [%d]\n", cmd_counter);}
 
-line:		END					{YYACCEPT;}
-			| cmds END  		{YYACCEPT;}
-			| cmds AMP END		{amp = 1; YYACCEPT;}
-			| cmds redir END	{YYACCEPT;}
-			| cmds redir AMP END{amp = 1; YYACCEPT;}
+backgnd:	END line								//{printf("(5) CMD COUNT: [%d]\n", cmd_counter);}
+			| backgnd.cmd END  		{YYACCEPT;} 	//printf("(6) CMD COUNT: [%d]\n", cmd_counter); }
+			| backgnd.cmd redir END	{YYACCEPT;} 	//printf("(7) CMD COUNT: [%d]\n", cmd_counter); }
+			| backgnd.cmd AMP backgnd  				//{printf("(8) CMD COUNT: [%d]\n", cmd_counter);}
 
-cmds:		cmd.args
-			| cmd.args VERT cmds
-			
-cmd.args:	cmd args
+cmds:		cmd.args			 					//{printf("(9) CMD COUNT: [%d]\n", cmd_counter);}
+			| cmd.args VERT cmds 					//{printf("(10) CMD COUNT: [%d]\n", cmd_counter);}
+
+cmd.args:	cmd args 								//{printf("(11) CMD COUNT: [%d]\n", cmd_counter);}
+
+backgnd.cmd:
+			cmd args 		{
+								//printf("(12) CMD COUNT: [%d]\n", cmd_counter);
+								//Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								//my_cmd->backgnd = 1;
+								amp = 1;
+							}
 
 cmd:		SETENV			{
 								arg_counter = 0;
@@ -62,6 +73,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, "setenv");
 								new_cmd->bi_type = SET;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 								bi = SET;
 							}
@@ -72,6 +84,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, "printenv");
 								new_cmd->bi_type = PRINT;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 								bi = PRINT;
 							}
@@ -82,6 +95,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, "unsetenv");
 								new_cmd->bi_type = UNSET;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 								bi = UNSET;
 							}
@@ -92,6 +106,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, "cd");
 								new_cmd->bi_type = CHANGE;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 								bi = CHANGE;
 							}
@@ -102,6 +117,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, "alias");
 								new_cmd->bi_type = AL;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 								bi = AL;
 							}
@@ -112,6 +128,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, "unalias");
 								new_cmd->bi_type = UNAL;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 								bi = UNAL;
 							}
@@ -122,6 +139,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, "clear");
 								new_cmd->bi_type = CLR;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 								bi = CLR;
 							}
@@ -132,6 +150,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, "bye");
 								new_cmd->bi_type = BY;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 								bi = BY;
 							}
@@ -142,6 +161,7 @@ cmd:		SETENV			{
 								strcpy(new_cmd->cmdname, str);
 								new_cmd->bi_type = 0;
 								new_cmd->num_args = 0;
+								new_cmd->backgnd = 0;
 								cmd_counter++;
 							}
 
@@ -154,8 +174,10 @@ args:		/*no arguments*/
 								my_cmd->num_args = arg_counter + 1;
 							}
 			| args WORD		{
+								char *wild;
+								wild = strdup(insertWildCard(str));
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
-								strcpy(my_cmd->arguments[arg_counter], str);
+								strcpy(my_cmd->arguments[arg_counter], wild);
 								arg_counter++;
 								my_cmd->num_args = arg_counter;
 							}
@@ -242,6 +264,6 @@ errfile:	WORD			{
 							}
 
 %%
-void yyerror(char *s) {
-	fprintf(stderr, "%s\n", s);
+void yyerror(char *err) {
+	fprintf(stderr, "%s: \'%s\'\n", err, str);
 }

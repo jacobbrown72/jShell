@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include "shell.h"
 #include "shellfunctions.h"
 #include "shellCmds.h"
@@ -58,6 +60,7 @@ void initShell(){
 		cmd->num_args = 0;
 		cmd->infd = -1;
 		cmd->outfd = -1;
+		cmd->backgnd = 0;
 		strcpy(global_cmd_path[i], "");
 	}
 	
@@ -151,7 +154,10 @@ int checkCmd(){
 		
 		/*first command should be the built in command*/
 		Cmd cmd = cmd_table[0];
-		
+
+		/*Check to see if built in command is a background process*/
+		if(cmd.backgnd) {strcpy(errorMsg, "Illegal command, background process allowed with built in functions"); return SYSERR;}
+
 		/*Check built in command*/
 		if(bi == SET){
 			if(cmd.num_args < 2){strcpy(errorMsg, "Wrong number of arguments, setenv requires two arguments"); return SYSERR;}
@@ -321,14 +327,14 @@ int executable(Cmd* cmd, int index){
 	//place the error checking at the end
 }
 
-int executeOther(){
+int pipeCmd(){
 	Cmd* cmd;
 	int pid;
 	int arg_count;
 	int i, j;
 	int position = -1;
 	int file_descriptor[2];
-	
+
 	for(i = 0; i < cmd_counter; i++){
 		cmd = &cmd_table[i];
 		arg_count = cmd->num_args + 2;
@@ -338,15 +344,15 @@ int executeOther(){
 		for(j = 1; j < arg_count - 1; j++){
 			argv[j] = cmd->arguments[j-1];
 		}
-		
+
 		if(cmd_counter == 1) position = ONLY_ONE;
 		else if(i == 0 && cmd_counter > 1) position = FIRST;
 		else if(i == cmd_counter-1 && cmd_counter > 1) position = LAST;
 		else position = MIDDLE;
-		
+
 		pipe(file_descriptor);
 		pid = fork();
-		
+
 		if(pid == 0){
 			switch(position){
 				case ONLY_ONE :
@@ -361,7 +367,7 @@ int executeOther(){
 						close(oFile);
 					}
 					break;
-					
+
 				case FIRST :
 					if(inFile_red){
 						close(0);
@@ -373,17 +379,17 @@ int executeOther(){
 					close(file_descriptor[READ]);
 					close(file_descriptor[WRITE]);
 					break;
-					
+
 				case MIDDLE :
 					close(0);
 					dup(file_descriptor[READ]);
 					close(file_descriptor[READ]);
-					
+
 					close(1);
 					dup(file_descriptor[WRITE]);
 					close(file_descriptor[WRITE]);
 					break;
-					
+
 				case LAST :
 					if(outFile_red){
 						close(1);
@@ -395,9 +401,9 @@ int executeOther(){
 					close(file_descriptor[READ]);
 					close(file_descriptor[WRITE]);
 					break;
-					
+
 				default :
-					printf("error occured\n"); 
+					printf("error occured\n");
 			}
 			execv(global_cmd_path[i], argv);
 			exit(1);
@@ -409,6 +415,52 @@ int executeOther(){
 	}
 }
 
+void backgndCmd(){
+	int i;
+	for(i = 0; i < cmd_counter; i++) {
+		if(fork() == 0){
+			//printf("BACKGROUND PROCESS [%d] %d\n", i, getpid());
+			Cmd *cmd;
+			int pid;
+			int arg_count;
+			int j;
+
+			cmd = &cmd_table[i];
+			arg_count = cmd->num_args + 2;
+			char *argv[arg_count];
+			argv[0] = global_cmd_path[i];
+			argv[arg_count - 1] = NULL;
+			for (j = 1; j < arg_count - 1; j++) {
+				argv[j] = cmd->arguments[j - 1];
+			}
+			pid = fork();
+
+			if (pid == 0) {
+				printf("START PROCESS: [%d] %d\n", i + 1, getpid());
+				execv(global_cmd_path[i], argv);
+				exit(1);
+			}
+			wait(0);
+			printf("DONE: [%d]\n", i + 1);
+			exit(0);
+
+		} //else {
+			//printf("PARENT PROCESS [%d] %d\nCOMMAND COUNTER [%d]\n", i, getpid(), cmd_counter);
+			//continue;
+		//}
+	}
+	int j;
+	for (j = 0; j <= i; j++){
+		wait(0);
+	}
+	//printf("DONE: [%d] %d\n", i, getpid());
+}
+
+int executeOther(){
+	if(amp) backgndCmd();
+	else pipeCmd();
+	return OK;
+}
 
 int findAlias(Alias* alias){
 	Alias* aptr;
@@ -494,6 +546,30 @@ int checkAlias(){
 		}
 	}
 	return OK;
+}
+
+char* insertWildCard(char *str){
+
+/*
+
+	DIR *dp;
+	struct dirent *ep;
+	dp = opendir ("./");
+
+	if (dp != NULL)
+	{
+		while (ep = readdir (dp)){
+			puts (ep->d_name);
+		}
+
+
+		(void) closedir (dp);
+	}
+	else
+		perror ("Couldn't open the directory");
+		*/
+
+	return str;
 }
 
 
