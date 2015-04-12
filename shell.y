@@ -29,11 +29,15 @@
 %token QUOTE	// "
 %token WACK		// "\"	
 %token AMP		// &
+%token STAR		// *
+%token QUEST	// ?
 %token STDERR
 %token END
 %token WORD
 %token ENVSTR
 %token WHITESPACE
+
+%left ENVSTR
 
 %start line
 
@@ -141,11 +145,11 @@ cmd:		SETENV			{
 
 args:		/*no arguments*/
 
-			| args env.str	{
+			| args ENVSTR 	{
+								strcat(temp, insertEnvVal(str));
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
 								strcpy(my_cmd->arguments[arg_counter], temp);
-								arg_counter++;
-								my_cmd->num_args = arg_counter;
+								my_cmd->num_args = arg_counter + 1;
 							}
 			| args WORD		{
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
@@ -179,16 +183,12 @@ words:		WORD			{
 								}
 
 env.str:	ENVSTR			{
-								strcpy(temp, insertEnvVal(str));
-							}
-			| env.str ENVSTR	{
 								strcat(temp, insertEnvVal(str));
 							}
-
-			| env.str VERT ENVSTR 	{
-										strcat(temp, " | ");
-										strcpy(temp, insertEnvVal(str));
-									}
+			| env.str ENVSTR	{
+								if(str[0] != '$' && str[1] != '{') strcat(temp, " ");
+								strcat(temp, insertEnvVal(str));
+							}
 
 redir:		input_red output_red err_red
 			| input_red err_red output_red
