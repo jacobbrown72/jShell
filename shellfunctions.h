@@ -43,6 +43,10 @@ int executable(Cmd* cmd, int index);
 /*get local environment variable value*/
 char* getLocalEnv(char * variable);
 
+/*insert environment variable into string*/
 char* insertEnvVal(char *str);
+
+/*create multiple strings from wild card pattern*/
+char* insertWildCard(char *str);
 
 #endif

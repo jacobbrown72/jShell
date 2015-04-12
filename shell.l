@@ -25,11 +25,12 @@
 "&"				return AMP;
 "*"				return STAR;
 "?"				return QUEST;
+"2"				return STDERR;
 [ \t]+			;
 \n				return END;
 
 [a-zA-Z0-9_:./~-]*"${"[a-zA-Z0-9]+"}"[a-zA-Z0-9_:./~-]* {str = yytext; str_length = yyleng; return ENVSTR;}
-[a-zA-Z0-9_:./~-]+	{str = yytext; str_length = yyleng; return WORD;}
+[a-zA-Z0-9_:./~*?-]+	{str = yytext; str_length = yyleng; return WORD;}
 
 %%
 

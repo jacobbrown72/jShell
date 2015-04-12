@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include "shell.h"
 #include "shellfunctions.h"
 #include "shellCmds.h"
@@ -58,6 +60,7 @@ void initShell(){
 		cmd->num_args = 0;
 		cmd->infd = -1;
 		cmd->outfd = -1;
+		cmd->backgnd = 0;
 		strcpy(global_cmd_path[i], "");
 	}
 	
@@ -151,7 +154,10 @@ int checkCmd(){
 		
 		/*first command should be the built in command*/
 		Cmd cmd = cmd_table[0];
-		
+
+		/*Check to see if built in command is a background process*/
+		if(cmd.backgnd) {strcpy(errorMsg, "Illegal command, background process allowed with built in functions"); return SYSERR;}
+
 		/*Check built in command*/
 		if(bi == SET){
 			if(cmd.num_args < 2){strcpy(errorMsg, "Wrong number of arguments, setenv requires two arguments"); return SYSERR;}
@@ -328,7 +334,6 @@ int preparePipe(){
 		int fileds[2];
 		pipe(fileds);
 		if(fileds[0] == -1 || fileds[1] == -1) return SYSERR;
-		//printf("reading: %d\nwriting: %d\n", fileds[0], fileds[1]);
 		
 		current_cmd = &cmd_table[i];
 		previous_cmd = &cmd_table[i-1];
@@ -359,7 +364,6 @@ int executeOther(){
 	int arg_count;
 	int i, j;
 	int position = -1;
-	char message[13];
 	
 	if(preparePipe() == SYSERR){strcpy(errorMsg, "Could not make pipes"); return SYSERR;}
 	
@@ -372,14 +376,14 @@ int executeOther(){
 		for(j = 1; j < arg_count - 1; j++){
 			argv[j] = cmd->arguments[j-1];
 		}
-		
+
 		if(cmd_counter == 1) position = ONLY_ONE;
 		else if(i == 0 && cmd_counter > 1) position = FIRST;
 		else if(i == cmd_counter-1 && cmd_counter > 1) position = LAST;
 		else position = MIDDLE;
-	
+		printf("command: %s\n", argv[0]);
 		pid = fork();
-		
+
 		if(pid == 0){
 			switch(position){
 				case ONLY_ONE :
@@ -394,8 +398,9 @@ int executeOther(){
 						close(oFile);
 					}
 					break;
-					
+
 				case FIRST :
+					printf("in first command\n");
 					if(inFile_red){
 						close(0);
 						dup(iFile);
@@ -403,13 +408,15 @@ int executeOther(){
 					}
 					dup2(cmd->outfd, 1);
 					break;
-					
+
 				case MIDDLE :
+					printf("in middle command\n");
 					dup2(cmd->infd, 0);
 					dup2(cmd->outfd, 1);
 					break;
-					
+
 				case LAST :
+					printf("in last command\n");
 					dup2(cmd->infd, 0);
 					
 					if(outFile_red){
@@ -418,9 +425,9 @@ int executeOther(){
 						close(oFile);
 					}
 					break;
-					
+
 				default :
-					printf("error occured\n"); 
+					printf("error occured\n");
 			}
 			closePipe(-1);
 			execv(global_cmd_path[i], argv);
@@ -428,9 +435,58 @@ int executeOther(){
 		}
 	}
 	closePipe(-1);
-	for(i = 0; i < cmd_counter; i++) wait(0);
+	if(!amp){
+		for(i = 0; i < cmd_counter; i++) wait(0);
+	}
+}
+/*
+void backgndCmd(){
+	int i;
+	for(i = 0; i < cmd_counter; i++) {
+		if(fork() == 0){
+			//printf("BACKGROUND PROCESS [%d] %d\n", i, getpid());
+			Cmd *cmd;
+			int pid;
+			int arg_count;
+			int j;
+
+			cmd = &cmd_table[i];
+			arg_count = cmd->num_args + 2;
+			char *argv[arg_count];
+			argv[0] = global_cmd_path[i];
+			argv[arg_count - 1] = NULL;
+			for (j = 1; j < arg_count - 1; j++) {
+				argv[j] = cmd->arguments[j - 1];
+			}
+			pid = fork();
+
+			if (pid == 0) {
+				printf("START PROCESS: [%d] %d\n", i + 1, getpid());
+				execv(global_cmd_path[i], argv);
+				exit(1);
+			}
+			wait(0);
+			printf("DONE: [%d]\n", i + 1);
+			exit(0);
+
+		} //else {
+			//printf("PARENT PROCESS [%d] %d\nCOMMAND COUNTER [%d]\n", i, getpid(), cmd_counter);
+			//continue;
+		//}
+	}
+	int j;
+	for (j = 0; j <= i; j++){
+		wait(0);
+	}
+	//printf("DONE: [%d] %d\n", i, getpid());
 }
 
+int executeOther(){
+	if(amp) backgndCmd();
+	else pipeCmd();
+	return OK;
+}
+*/
 
 int findAlias(Alias* alias){
 	Alias* aptr;
@@ -459,6 +515,31 @@ int isCircular(Alias* alias, int i){
 	isCircular(&alias_table[c], i);
 }
 
+void parse(char* alias, Cmd* table){
+	printf("parsing this alias: %s\n", alias);
+	int counter = 0;
+	char* cmdArgs = strtok(alias, "|");
+	while(cmdArgs){
+		printf("cmd+args %d: %s\n", cmd_counter, cmdArgs);
+		char* cmdORargs = strtok(cmdArgs, " ");
+		printf("cmd: %s\n", cmdORargs);
+		Cmd* new_cmd = &table[cmd_counter];
+		strcpy(new_cmd->cmdname, cmdORargs);
+		cmd_counter++;
+		cmdORargs = strtok(NULL, " ");
+		printf("arg: %s\n", cmdORargs);
+		while(cmdORargs){
+			strcpy(new_cmd->arguments[counter], cmdORargs);
+			counter++;
+			new_cmd->num_args = counter;
+			cmdORargs = strtok(NULL, " ");
+		}
+		counter = 0;
+		cmdArgs = strtok(NULL, "|");
+		printf("next command: %s\n", cmdArgs);
+	}
+}
+
 int handleAlias(Cmd* cmd, Alias* alias, int position){
 	char cmd_word[50];
 
@@ -469,13 +550,13 @@ int handleAlias(Cmd* cmd, Alias* alias, int position){
 	Cmd* temp;
 	cmd_table = (Cmd*)malloc(100 * sizeof(Cmd));
 	
+	
 	strcpy(cmd_word, alias->value);
 	strcat(cmd_word, "\n");
 
 	FILE* cmd_file = fopen("cmd_file.txt", "w");
 	fputs(cmd_word, cmd_file);
 	fclose(cmd_file);
-	
 	cmd_file = fopen("cmd_file.txt", "r");
 	yyin = cmd_file;
 	yyparse();
@@ -492,10 +573,10 @@ int handleAlias(Cmd* cmd, Alias* alias, int position){
 	temp = cmd_table;
 	cmd_table = cmd_table_old;
 	cmd_table_old = temp;
-	//free(cmd_table_old);		//this might cause memory issues, if sample imputs are small it shouldn't be a big deal
 	cmd_counter = old_cmd_count + cmd_counter - 1;
 		
 	checkAlias();
+	
 	
 	return OK;
 }
@@ -510,12 +591,38 @@ int checkAlias(){
 		for(j = 0; j < MAXALI; j++){
 			alias = &alias_table[j];
 			if((strcmp(cmd->cmdname, alias->name) == 0) && alias->used == 1){
+				printf("alias found: %s\n", alias->name);
 				if(isCircular(alias, 0)) {strcpy(errorMsg, "Recursive Alias error"); return SYSERR;}
+				printf("handling alias\n");
 				handleAlias(cmd, alias, i);
 			}
 		}
 	}
 	return OK;
+}
+
+char* insertWildCard(char *str){
+
+/*
+
+	DIR *dp;
+	struct dirent *ep;
+	dp = opendir ("./");
+
+	if (dp != NULL)
+	{
+		while (ep = readdir (dp)){
+			puts (ep->d_name);
+		}
+
+
+		(void) closedir (dp);
+	}
+	else
+		perror ("Couldn't open the directory");
+		*/
+
+	return str;
 }
 
 
