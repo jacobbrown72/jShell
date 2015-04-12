@@ -25,9 +25,6 @@
 "&"				return AMP;
 "*"				return STAR;
 "?"				return QUEST;
-"2"				return STDERR;
-"1" 			return STDOUT;
-"0"				return STDIN;
 [ \t]+			;
 \n				return END;
 

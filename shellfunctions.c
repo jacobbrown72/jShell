@@ -377,7 +377,7 @@ int executeOther(){
 		else if(i == 0 && cmd_counter > 1) position = FIRST;
 		else if(i == cmd_counter-1 && cmd_counter > 1) position = LAST;
 		else position = MIDDLE;
-		
+	
 		pid = fork();
 		
 		if(pid == 0){
@@ -401,55 +401,34 @@ int executeOther(){
 						dup(iFile);
 						close(iFile);
 					}
-					
-					close(1);
-					dup(cmd->outfd);
-					close(cmd->outfd);
-					close(cmd->infd);
-					
-					//write(1, "Hello World\n", 13);
+					dup2(cmd->outfd, 1);
 					break;
 					
 				case MIDDLE :
-					close(0);
-					dup(cmd->infd);
-					close(cmd->infd);
-					
-					close(1);
-					dup(cmd->outfd);
-					close(cmd->outfd);
-					
-					//read(0, message, 13);
-					//write(1, message, 13);
+					dup2(cmd->infd, 0);
+					dup2(cmd->outfd, 1);
 					break;
 					
 				case LAST :
-					close(0);
-					dup(cmd->infd);
-					close(cmd->infd);
-					close(cmd->outfd);
+					dup2(cmd->infd, 0);
 					
 					if(outFile_red){
 						close(1);
 						dup(oFile);
 						close(oFile);
 					}
-					//read(0, message, 13);
-					//write(1, message, 13);
 					break;
 					
 				default :
 					printf("error occured\n"); 
 			}
-			closePipe(i);
+			closePipe(-1);
 			execv(global_cmd_path[i], argv);
 			exit(1);
 		}
-		else{
-			closePipe(-1);
-			wait(0);
-		}
 	}
+	closePipe(-1);
+	for(i = 0; i < cmd_counter; i++) wait(0);
 }
 
 
