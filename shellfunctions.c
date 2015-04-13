@@ -9,6 +9,7 @@
 #include "shell.h"
 #include "shellfunctions.h"
 #include "shellCmds.h"
+#include "glob.h"
 
 
 void printPrompt(){
@@ -549,25 +550,27 @@ int checkAlias(){
 }
 
 char* insertWildCard(char *str){
+	//Declare glob_t for storing the results of globbing
+	glob_t globbuf;
 
-/*
+	//Glob.. GLOB_TILDE tells the globber to expand "~" in the pattern to the home directory
+	glob(str, GLOB_TILDE | GLOB_NOCHECK, NULL, &globbuf);
 
-	DIR *dp;
-	struct dirent *ep;
-	dp = opendir ("./");
+	int i;
+	for(i = 0; i < globbuf.gl_pathc; ++i ){
+		Cmd* my_cmd = &cmd_table[cmd_counter-1];
+		//printf("GLOBAL PATH: %s\n", globbuf.gl_pathv[i]);
 
-	if (dp != NULL)
-	{
-		while (ep = readdir (dp)){
-			puts (ep->d_name);
-		}
-
-
-		(void) closedir (dp);
+		strcpy(my_cmd->arguments[arg_counter], globbuf.gl_pathv[i]);
+		arg_counter++;
+		my_cmd->num_args = arg_counter;
+		//cmd_counter++;
 	}
-	else
-		perror ("Couldn't open the directory");
-		*/
+
+	//Free the globbuf structure
+
+	if( globbuf.gl_pathc > 0 )
+		globfree( &globbuf );
 
 	return str;
 }

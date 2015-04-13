@@ -174,12 +174,13 @@ args:		/*no arguments*/
 								my_cmd->num_args = arg_counter + 1;
 							}
 			| args WORD		{
-								char *wild;
-								wild = strdup(insertWildCard(str));
-								Cmd* my_cmd = &cmd_table[cmd_counter-1];
-								strcpy(my_cmd->arguments[arg_counter], wild);
-								arg_counter++;
-								my_cmd->num_args = arg_counter;
+								insertWildCard(str);
+								//char wild[100];
+								//strcpy(wild, insertWildCard(str));
+								//Cmd* my_cmd = &cmd_table[cmd_counter-1];
+								//strcpy(my_cmd->arguments[arg_counter], wild);
+								//arg_counter++;
+								//my_cmd->num_args = arg_counter;
 							}
 			| args quote	{
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
