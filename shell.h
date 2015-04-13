@@ -54,7 +54,7 @@ int cmd_counter;
 int bi;
 
 typedef struct command{
-	char cmdname[20];
+	char cmdname[50];
 	int bi_type;
 	char arguments[MAXARGS][100];
 	int num_args;

@@ -30,6 +30,7 @@
 %token WACK		// "\"	
 %token AMP		// &
 %token STDERR
+%token STDOUT
 %token STAR
 %token QUEST
 %token END
@@ -47,18 +48,20 @@
 line:		END					{YYACCEPT;} 		// printf("(1) CMD COUNT: [%d]\n", cmd_counter);}
 			| cmds END  		{YYACCEPT;} 		// printf("(2) CMD COUNT: [%d]\n", cmd_counter);}
 			| cmds redir END	{YYACCEPT;} 		// printf("(3) CMD COUNT: [%d]\n", cmd_counter);}
-			| backgnd.cmd AMP backgnd  				//{printf("(4) CMD COUNT: [%d]\n", cmd_counter);}
+			| cmds AMP END  	{YYACCEPT; amp = 1;}//{printf("(4) CMD COUNT: [%d]\n", cmd_counter);}
+			| cmds redir AMP END{YYACCEPT; amp = 1;}
 
-backgnd:	END line								//{printf("(5) CMD COUNT: [%d]\n", cmd_counter);}
-			| backgnd.cmd END  		{YYACCEPT;} 	//printf("(6) CMD COUNT: [%d]\n", cmd_counter); }
-			| backgnd.cmd redir END	{YYACCEPT;} 	//printf("(7) CMD COUNT: [%d]\n", cmd_counter); }
-			| backgnd.cmd AMP backgnd  				//{printf("(8) CMD COUNT: [%d]\n", cmd_counter);}
+//backgnd:	END line								//{printf("(5) CMD COUNT: [%d]\n", cmd_counter);}
+//			| backgnd.cmd END  		{YYACCEPT;} 	//printf("(6) CMD COUNT: [%d]\n", cmd_counter); }
+//			| backgnd.cmd redir END	{YYACCEPT;} 	//printf("(7) CMD COUNT: [%d]\n", cmd_counter); }
+//			| backgnd.cmd AMP backgnd  				//{printf("(8) CMD COUNT: [%d]\n", cmd_counter);}
 
 cmds:		cmd.args			 					//{printf("(9) CMD COUNT: [%d]\n", cmd_counter);}
 			| cmd.args VERT cmds 					//{printf("(10) CMD COUNT: [%d]\n", cmd_counter);}
 
 cmd.args:	cmd args 								//{printf("(11) CMD COUNT: [%d]\n", cmd_counter);}
 
+/*
 backgnd.cmd:
 			cmd args 		{
 								//printf("(12) CMD COUNT: [%d]\n", cmd_counter);
@@ -66,6 +69,7 @@ backgnd.cmd:
 								//my_cmd->backgnd = 1;
 								amp = 1;
 							}
+*/
 
 cmd:		SETENV			{
 								arg_counter = 0;
@@ -249,6 +253,9 @@ output_red:	GT outfile		{
 
 err_red:	STDERR GT errfile	{
 									errFile_red = 1;
+								}
+			| STDERR GT STDOUT	{
+									errFile_red = 2;
 								}
 
 infile:		WORD			{

@@ -26,6 +26,7 @@
 "*"				return STAR;
 "?"				return QUEST;
 "2"				return STDERR;
+"&1"			return STDOUT;
 [ \t]+			;
 \n				return END;
 

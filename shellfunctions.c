@@ -225,8 +225,12 @@ int checkCmd(){
 			}
 		}
 		
-		if(errFile_red){
-			
+		if(errFile_red == 1){	//redirect to file
+			eFile = open(errFile, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+			if(eFile < 0) {strcpy(errorMsg, "File not opened"); return SYSERR;}
+		}
+		else if(errFile_red == 2){//redirect to stdout
+			eFile = 1;
 		}
 		return OK;
 	}
@@ -292,8 +296,7 @@ int executable(Cmd* cmd, int index){
 
 	char *cmdname = cmd->cmdname;
 
-	if(cmdname[0] == '/'){
-		cmdname++;
+	if(cmdname[0] == '/' || cmdname[0] == '.'){
 		if(access(cmdname, X_OK) == 0){
 			strcpy(global_cmd_path[index], cmdname);
 			return OK;
@@ -381,10 +384,15 @@ int executeOther(){
 		else if(i == 0 && cmd_counter > 1) position = FIRST;
 		else if(i == cmd_counter-1 && cmd_counter > 1) position = LAST;
 		else position = MIDDLE;
-		printf("command: %s\n", argv[0]);
+		
 		pid = fork();
 
 		if(pid == 0){
+			//inside child process
+			if(errFile_red){
+				close(2);
+				dup(eFile);
+			}
 			switch(position){
 				case ONLY_ONE :
 					if(inFile_red){
@@ -400,7 +408,6 @@ int executeOther(){
 					break;
 
 				case FIRST :
-					printf("in first command\n");
 					if(inFile_red){
 						close(0);
 						dup(iFile);
@@ -410,13 +417,11 @@ int executeOther(){
 					break;
 
 				case MIDDLE :
-					printf("in middle command\n");
 					dup2(cmd->infd, 0);
 					dup2(cmd->outfd, 1);
 					break;
 
 				case LAST :
-					printf("in last command\n");
 					dup2(cmd->infd, 0);
 					
 					if(outFile_red){
@@ -433,6 +438,7 @@ int executeOther(){
 			execv(global_cmd_path[i], argv);
 			exit(1);
 		}
+		//parent process resumes here
 	}
 	closePipe(-1);
 	if(!amp){
@@ -591,9 +597,7 @@ int checkAlias(){
 		for(j = 0; j < MAXALI; j++){
 			alias = &alias_table[j];
 			if((strcmp(cmd->cmdname, alias->name) == 0) && alias->used == 1){
-				printf("alias found: %s\n", alias->name);
 				if(isCircular(alias, 0)) {strcpy(errorMsg, "Recursive Alias error"); return SYSERR;}
-				printf("handling alias\n");
 				handleAlias(cmd, alias, i);
 			}
 		}
