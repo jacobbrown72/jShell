@@ -214,10 +214,11 @@ words:		WORD			{
 env.str:	ENVSTR			{
 								strcat(temp, insertEnvVal(str));
 							}
-			| env.str ENVSTR	{
+			| ENVSTR env.str	{
 								if(str[0] != '$' && str[1] != '{') strcat(temp, " ");
 								strcat(temp, insertEnvVal(str));
 							}
+			| ENVSTR words
 
 redir:		input_red output_red err_red
 			| input_red err_red output_red

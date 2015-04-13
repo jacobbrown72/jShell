@@ -638,13 +638,15 @@ char* insertWildCard(char *str){
 char* insertEnvVal(char *str){
 
 	size_t end = 0, start = 0, len = strlen(str);
-	char before[50], envVar[50], after[50], *envVal;
-	char tmp [200] = {};
+	char before[100], envVar[100], after[100], *envVal;
+	char tmp [200];
 
 	end = len - strlen(strstr(str, "${"));
 	if(end){
 		strncpy(before, str, end);
 		strcpy(tmp, before);
+	} else {
+		strcpy(tmp, "");
 	}
 
 	start = end + 2;
