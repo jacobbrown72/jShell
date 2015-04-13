@@ -209,7 +209,7 @@ words:		WORD			{
 								strcat(temp, insertEnvVal(str));
 							}
 			| words ENVSTR	{
-								strcat(temp, " ");
+								if(str[0] == '$' && str[1] =='{') strcat(temp, " ");
 								strcat(temp, insertEnvVal(str));
 							}
 
