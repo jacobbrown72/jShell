@@ -17,6 +17,8 @@ y.tab.c
 shell.h.gch
 jshell
 cmd_file.txt
+script_file.txt
+
 
 #Used by CLion IDE
 CMakeLists.txt
