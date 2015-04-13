@@ -1,0 +1,19 @@
+Implemented:
+
+*   all built-in commands fully implemented and working
+*   able to recognize non-built-in commands and their argument, and successfully execute command
+*   File I/O
+*   piping
+*   wildcard matching
+*   environment variable expansion
+*   tilde expansion
+*   background processes
+*   standard error redirection
+
+
+Not Implemented:
+
+*   piping with aliases
+*   bug: environment variables in quotes add unnecessary spaces to string
+*   filename completion with escape key
+*   can't read commands from input file

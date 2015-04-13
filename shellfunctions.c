@@ -283,6 +283,11 @@ int execute(){
 }
 
 char* getLocalEnv(char * variable){
+	if(variable[0]=='$' && variable[1]=='{'){
+		variable = variable + 2;
+		variable[strlen(variable)-2] ='\0';
+		//printf("STR: %s\n", variable);
+	}
 	int i;
 	for(i = 0; i < MAXENV; i++){
 		Env *env = &env_table[i];
