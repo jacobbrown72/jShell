@@ -67,6 +67,10 @@ int alias(Cmd* cmd){
 	else{
 		for(i = 0; i < MAXALI; i++){
 			alias = &alias_table[i];
+			if(strcmp(alias->name, cmd->arguments[0]) == 0) alias->used = 0;
+		}
+		for(i = 0; i < MAXALI; i++){
+			alias = &alias_table[i];
 			if(alias->used == 0){
 				strcpy(alias->name, cmd->arguments[0]);
 				strcpy(alias->value, cmd->arguments[1]);
