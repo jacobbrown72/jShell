@@ -46,6 +46,7 @@
 %%
 													// Was using this to debug parser tree
 line:		END					{YYACCEPT;} 		// printf("(1) CMD COUNT: [%d]\n", cmd_counter);}
+			| ENVSTR END		{printf("%s\n", getLocalEnv(str)); YYACCEPT;}
 			| cmds END  		{YYACCEPT;} 		// printf("(2) CMD COUNT: [%d]\n", cmd_counter);}
 			| cmds redir END	{YYACCEPT;} 		// printf("(3) CMD COUNT: [%d]\n", cmd_counter);}
 			| cmds AMP END  	{YYACCEPT; amp = 1;}//{printf("(4) CMD COUNT: [%d]\n", cmd_counter);}
@@ -158,7 +159,7 @@ cmd:		SETENV			{
 								cmd_counter++;
 								bi = BY;
 							}
-							
+
 			| WORD			{
 								arg_counter = 0;
 								Cmd* new_cmd = &cmd_table[cmd_counter];
@@ -179,12 +180,6 @@ args:		/*no arguments*/
 							}
 			| args WORD		{
 								insertWildCard(str);
-								//char wild[100];
-								//strcpy(wild, insertWildCard(str));
-								//Cmd* my_cmd = &cmd_table[cmd_counter-1];
-								//strcpy(my_cmd->arguments[arg_counter], wild);
-								//arg_counter++;
-								//my_cmd->num_args = arg_counter;
 							}
 			| args quote	{
 								Cmd* my_cmd = &cmd_table[cmd_counter-1];
@@ -193,8 +188,7 @@ args:		/*no arguments*/
 								my_cmd->num_args = arg_counter;
 							}
 							
-quote:		QUOTE env.str QUOTE
-			| QUOTE words QUOTE
+quote:		QUOTE words QUOTE
 			| QUOTE QUOTE	{strcpy(temp, "");}
 
 
@@ -211,14 +205,14 @@ words:		WORD			{
 									strcat(temp, str);
 								}
 
-env.str:	ENVSTR			{
+			| ENVSTR			{
 								strcat(temp, insertEnvVal(str));
 							}
-			| ENVSTR env.str	{
-								if(str[0] != '$' && str[1] != '{') strcat(temp, " ");
+			| words ENVSTR	{
+								strcat(temp, " ");
 								strcat(temp, insertEnvVal(str));
 							}
-			| ENVSTR words
+
 
 redir:		input_red output_red err_red
 			| input_red err_red output_red
