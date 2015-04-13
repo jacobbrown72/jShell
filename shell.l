@@ -27,6 +27,7 @@
 "?"				return QUEST;
 "2"				return STDERR;
 "&1"			return STDOUT;
+\033			printf("ESC\n");
 [ \t]+			;
 \n				return END;
 
